@@ -9,12 +9,8 @@ Add your content here.
 = Details =
 Need an autorep script that will:
 
-  * Default behavior is to report current status for a list of jobs matching
-a pattern. Patterns will use SQL-style '%' for wildcards (E.g. %job would
-match anything ending in 'job'. My%job% would match My_New_job_1, My_job,
-Myjob, etc. )
-  * Output JIL for a list of jobs matching the same-style pattern. This is
-selected via the '-q' switch. 
+  * Default behavior is to report current status for a list of jobs matching a pattern. Patterns will use SQL-style '%' for wildcards (E.g. %job would match anything ending in 'job'. My%job% would match My_New_job_1, My_job, Myjob, etc. )
+  * Output JIL for a list of jobs matching the same-style pattern. This is selected via the '-q' switch. 
   * Job names are specified with the -J parameter.
 
 Sample command lines:
@@ -23,7 +19,7 @@ Sample command lines:
 autorep -J My%Job   
 
 # output JIL for all jobs matching a pattern
-autorep -qJ MyJob%xyz
+autorep -qJ My_Job%xyz
 
 More advanced reporting functionality will come along later. I think this
 covers the general use case. 
