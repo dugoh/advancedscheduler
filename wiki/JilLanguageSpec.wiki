@@ -1,0 +1,52 @@
+#summary Job Information Language - specification of commonly used commands and fields
+
+= Introduction =
+
+This document seeks to describe the most commonly used portions of the Job Information Language, or "JIL" for short. 
+
+= Details =
+
+The general format of the JIL is a list of key-value pairs, delimited by colon (":"), usually with one key/value pair per line. JIL generally starts with a command, and is followed by details  describing changes to the job definition. 
+
+Note that it's possible to have multiple commands per line, and we probably want to support that, but it's not the normal use case. The exception is that sometimes job_type: is on the same line as the insert/update_job command.
+
+== JIL commands ==
+
+Jil commands generally start the input. They are key/value pairs where the key is the imperative portion, and  the value is the name of the job to be acted upon. 
+
+Valid commands are: 
+
+  * insert_job  -- create a new job
+  * update_job  -- modify an existing job
+  * delete_job  -- delete an existing job
+
+  * To do: add commands for adding machine definitions and globals. Are there others?
+
+
+*Example command*
+
+insert_job: MY_JOB_NAME
+
+
+== Job parameters ==
+
+delete_job takes no detail parameters, apart from the name of the job. 
+
+As for insert_job and update_job, the following attributes may be supplied in the JIL:
+
+  * machine: the machine on which the job should be executed
+  * command: the actual command to be executed
+  * start_mins: which minutes the job should be started every hour. This is a comma-separated list of minutes, e.g. 0,15,30,45
+  * start_times: actual times per day the job should be started. This is a comma-separated list of times, e.g. "5:15,15:30,23:59"
+  * start_days: comma-separated list of days on which the job should run, exclusive. These days are denoted using two-letter abbreviations: su,mo,tu,we,th,fr,sa
+  * condition: rules that determine when a job should run based on the state of other jobs, e.g. "failure(JOB1) and (success(JOB2) or success(JOB3)) and notrunning(JOB4)"
+  * alarm_if_fail: boolean (0/1) value determining whether an alarm should be sent upon a job failure event.
+  * date_conditions: 0/1 -- determines whether time/day constraints will be taken into consideration when determining when to kick off jobs. If 0, start_times, start_mins, and start_days will be ignored, and job control will be based on the condition field only. 
+  * std_in_file: file that will be redirected into the command as STDIN. Specify full path. Autosys does not provide this utility, but it should be trivial to add.
+  * std_out_file: file that will receive the job's STDOUT. Specify full path.
+  * std_err_file: file that will receive the job's STDERR. Specify full path.
+  * profile: file that will be sourced by the shell prior to kicking off the job. 
+
+TO DO: Add File Watcher and Box Job information
+
+
