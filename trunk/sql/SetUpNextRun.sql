@@ -9,10 +9,13 @@ begin
 	delete from RunSchedule
 	where JobID = NEW.JobID;
 	
-	nextrun := CalcNextRuntime(NEW.start_mins, NEW.start_times, NEW.start_days);
+	nextrun := CalcNextRuntime(NEW.JobID);
 
-	insert into RunSchedule (JobID, Next_Run, Condition)
-	select NEW.JobID, nextrun, NEW.Condition;
+	if nextrun is not null 
+	then
+		insert into RunSchedule (JobID, Next_Run, Condition)
+		select NEW.JobID, nextrun, NEW.Condition;
+	end if;
 
 	return NEW;
 

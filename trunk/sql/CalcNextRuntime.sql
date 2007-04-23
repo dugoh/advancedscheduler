@@ -1,15 +1,19 @@
---select CalcNextRuntime( '10,20,30,55', '5:00', 'th' )
+--select CalcNextRuntime( 14 )
 -- select * from Times
 -- drop table Times
--- drop function CalcNextRuntime(text, text, text)
-create or replace function CalcNextRuntime( text, text, text)
+-- drop function CalcNextRuntime(text)
+-- echo ('meh')
+create or replace function CalcNextRuntime( int)
 returns timestamp
 as $$
 
 declare
-	start_mins  alias for $1;
-	start_times  alias for $2;
-	start_days  alias for $3;
+	JobID alias for $1;
+
+	jobname text;
+	start_mins  text;
+	start_times  text;
+	start_days  text;
 
 	curhr int;
 	timestr text;
@@ -19,6 +23,29 @@ declare
 	nextstart timestamp;
 
 begin
+
+	-- Collect scheduling information
+
+	raise notice 'Determing scheduling information for jobid: %', JobID;
+
+	select name, start_mins, start_times, start_days
+	into jobname, start_mins, start_times, start_days
+	from Job
+	where JobID = JobID;
+
+	raise notice 'name: % start_mins: %  start_times: %   start_days: %', 
+		     jobname, start_mins, start_times, start_days;
+
+	/* 
+
+	For the time being, we simply figure out all possible start times for the current and next hour, and
+	consider them for the current and next day. We then take the minimum of that list which is greater than 
+	the current time. This allows scheduling over midnight.
+
+	To implement start_days, we'll need to consider whether current_day is listed, and when the
+	next current_day is. Instead of adding '1 day', we'd add (next day - current day) days. Should be straightforward.
+
+	*/
 
 	create temporary table times
 	(
@@ -45,16 +72,24 @@ begin
 			insert into times (starttime)
 			select CURRENT_DATE + timestr::time;
 
+			raise notice 'start_mins 1: %', timestr;
+
 			insert into times (starttime)
 			select CURRENT_DATE + interval '1 day' + timestr::time;
+
+			raise notice 'start_mins 2: %', timestr;
 
 			timestr := ((curhr + 1) % 24)::text || ':' || mins;
 
 			insert into times (starttime)
 			select CURRENT_DATE + timestr::time;
 
+			raise notice 'start_mins 3: %', timestr;
+
 			insert into times (starttime)
 			select CURRENT_DATE + '1 day'::interval + timestr::time;
+
+			raise notice 'start_mins 4: %', timestr;
 
 			counter := counter + 1;
 			mins := split_part( start_mins, ',', counter);
@@ -63,10 +98,39 @@ begin
 
 	end if;
 
+	-- start_times
+
+	if (start_times is not null)
+	then
+
+		timestr := split_part( start_times, ',', 1);
+		counter := 1;
+
+		while ( length(timestr) > 0 ) 
+		loop
+
+			insert into times (starttime)
+			select CURRENT_DATE + timestr::time;
+
+			raise notice 'start_times 1: %', timestr;
+
+			insert into times (starttime)
+			select CURRENT_DATE + interval '1 day' + timestr::time;
+
+			raise notice 'start_times 2: %', timestr;
+
+			counter := counter + 1;
+			timestr := split_part( start_times, ',', counter);
+
+
+		end loop;
+
+	end if;
+
 	select min(starttime)
 	into nextstart
 	from Times
-	where starttime > now();
+	where starttime >= now();
 
 
 	return nextstart;
