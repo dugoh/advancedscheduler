@@ -10,10 +10,7 @@ as $$
 declare
 	JobID alias for $1;
 
-	jobname text;
-	start_mins  text;
-	start_times  text;
-	start_days  text;
+	jobrec RECORD;
 
 	curhr int;
 	timestr text;
@@ -28,13 +25,13 @@ begin
 
 	raise notice 'Determing scheduling information for jobid: %', JobID;
 
-	select name, start_mins, start_times, start_days
-	into jobname, start_mins, start_times, start_days
+	select 
+	into jobrec *
 	from Job
 	where JobID = JobID;
 
 	raise notice 'name: % start_mins: %  start_times: %   start_days: %', 
-		     jobname, start_mins, start_times, start_days;
+		     jobrec.name, jobrec.start_mins, jobrec.start_times, jobrec.start_days;
 
 	/* 
 
@@ -47,20 +44,21 @@ begin
 
 	*/
 
+
 	create temporary table times
 	(
 		starttime timestamp
-	);
+	) on commit drop;
 
 	-- start_mins processing
 	
-	if (start_mins is not null) 
+	if (jobrec.start_mins is not null) 
 	then 
 
 		select date_part('hour', CURRENT_TIME)
 		into curhr;
 
-		mins := split_part( start_mins, ',', 1);
+		mins := split_part( jobrec.start_mins, ',', 1);
 		counter := 1;
 
 		while ( length(mins) > 0  ) 
@@ -72,27 +70,19 @@ begin
 			insert into times (starttime)
 			select CURRENT_DATE + timestr::time;
 
-			raise notice 'start_mins 1: %', timestr;
-
 			insert into times (starttime)
 			select CURRENT_DATE + interval '1 day' + timestr::time;
-
-			raise notice 'start_mins 2: %', timestr;
 
 			timestr := ((curhr + 1) % 24)::text || ':' || mins;
 
 			insert into times (starttime)
 			select CURRENT_DATE + timestr::time;
 
-			raise notice 'start_mins 3: %', timestr;
-
 			insert into times (starttime)
 			select CURRENT_DATE + '1 day'::interval + timestr::time;
 
-			raise notice 'start_mins 4: %', timestr;
-
 			counter := counter + 1;
-			mins := split_part( start_mins, ',', counter);
+			mins := split_part( jobrec.start_mins, ',', counter);
 
 		end loop;
 
@@ -100,10 +90,10 @@ begin
 
 	-- start_times
 
-	if (start_times is not null)
+	if (jobrec.start_times is not null)
 	then
 
-		timestr := split_part( start_times, ',', 1);
+		timestr := split_part( jobrec.start_times, ',', 1);
 		counter := 1;
 
 		while ( length(timestr) > 0 ) 
@@ -112,15 +102,11 @@ begin
 			insert into times (starttime)
 			select CURRENT_DATE + timestr::time;
 
-			raise notice 'start_times 1: %', timestr;
-
 			insert into times (starttime)
 			select CURRENT_DATE + interval '1 day' + timestr::time;
 
-			raise notice 'start_times 2: %', timestr;
-
 			counter := counter + 1;
-			timestr := split_part( start_times, ',', counter);
+			timestr := split_part( jobrec.start_times, ',', counter);
 
 
 		end loop;
@@ -132,6 +118,7 @@ begin
 	from Times
 	where starttime >= now();
 
+	--drop table Times;
 
 	return nextstart;
 

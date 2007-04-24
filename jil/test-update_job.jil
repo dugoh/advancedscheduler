@@ -1,4 +1,4 @@
-insert_job: run_true
+update_job: run_true
 command: true
 date_conditions: 1
 start_mins: 0,10,20,30,40,50
