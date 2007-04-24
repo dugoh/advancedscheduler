@@ -1,4 +1,4 @@
-drop table RunSchedule;
+--drop table RunSchedule;
 
 create table RunSchedule
 (
@@ -6,5 +6,5 @@ create table RunSchedule
 	, next_run	timestamp
 	, condition	text 
 
-	, primary key (jobid, next_run)
+	, primary key (jobid)
 );
