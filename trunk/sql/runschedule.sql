@@ -2,9 +2,9 @@ drop table RunSchedule;
 
 create table RunSchedule
 (
-	  jobid 	int not null references Job(jobid)
+	  jobid 	int not null references Job(jobid) on delete cascade
 	, next_run	timestamp
-	, condition	text
+	, condition	text 
 
 	, primary key (jobid, next_run)
 );
