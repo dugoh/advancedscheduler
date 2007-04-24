@@ -48,6 +48,7 @@ for line in jil:
         print "Deleting job " + value + "\n"
         job = Job().find(value)
         delete_job(job)
+        job = None
     
     elif job != None and parameter in ( 'std_in_file', 'std_err_file', 'std_out_file',
                                         'machine', 'start_mins', 'start_days', 'command'
