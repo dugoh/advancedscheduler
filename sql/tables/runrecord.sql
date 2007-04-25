@@ -10,7 +10,3 @@ CREATE TABLE runrecord
 ) 
 WITH OIDS;
 ALTER TABLE runrecord OWNER TO ads;
-
-
-
-

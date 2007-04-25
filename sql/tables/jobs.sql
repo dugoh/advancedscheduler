@@ -5,11 +5,11 @@
 CREATE TABLE job
 (
   jobid serial primary key,
-  status text not null default 'IN',
+  status varchar(10) not null default 'IN',
   std_in_file text,
   std_err_file text,
   name text unique,
-  machine text references Machine(name) on update cascade,
+  machine varchar(255) references Machine(name) on update cascade,
   command text,
   start_days text,
   start_mins text,
