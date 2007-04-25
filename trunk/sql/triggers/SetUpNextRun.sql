@@ -13,8 +13,8 @@ begin
 
 	if nextrun is not null 
 	then
-		insert into RunSchedule (JobID, Next_Run, Condition)
-		select NEW.JobID, nextrun, NEW.Condition;
+		insert into RunSchedule (Machine, JobID, Next_Run, Condition)
+		select NEW.Machine, NEW.JobID, nextrun, NEW.Condition;
 	end if;
 
 	return NEW;
