@@ -1,34 +1,19 @@
 /*
-	--declare curs refcursor;
 
-begin;
-	select * from GetPendingJobs('titan');
+select GetPendingJobs('titan');
 
-	fetch all from "<unnamed portal 12>";
-commit;
+select * from RunSchedule
+
+drop function GetPendingJobs(varchar)
 */
 
 create or replace function GetPendingJobs( varchar )
-returns refcursor
+returns setof int
 as $$
 
-	declare 
-		machine alias for $1;
-		JobID int;
-		joblist refcursor;
+		select JobID
+		from RunSchedule
+		where Machine = $1
+		and next_run <= now();
 
-	begin
-
-		
-		open joblist for
-			select JobID 
-			from RunSchedule
-			where Machine = machine
-			  and next_run <= now();
-
-		return joblist;
-
-	end;
-
-
-$$ language 'plpgsql';
+$$ language 'sql';
