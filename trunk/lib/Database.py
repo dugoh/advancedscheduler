@@ -11,17 +11,15 @@ metadata = BoundMetaData(db)
 
 job_table = Table('job', metadata, autoload = True)
 machine_table = Table('machine', metadata, autoload = True)
+runschedule_table = Table('runschedule', metadata, autoload = True)
 #runrecord_table = Table('runrecord', metadata, autoload = True)
 
-def commit_changes(obj):
-    session.save(obj)
-    session.flush()
-
-def delete_job(obj):
-    session.delete(obj)
-    session.flush()
+class ASObject(object):
+    def commit(self):
+        session.save(self)
+        session.flush()
     
-class Machine (object):
+class Machine (ASObject):
     def __repr__(self):
             return "%s(%r,%r)" % (
                     self.__class__.__name__, self.name)
@@ -30,8 +28,13 @@ class Machine (object):
         query = session.query(Machine)
         return query.get_by(name = name)
 
+class RunSchedule(ASObject):
+    
+    def find (self, machine):
+        query = session.query(RunSchedule)
+        return query.select(Machine = machine)
 
-class Job(object):
+class Job(ASObject):
     def __repr__(self):
             return "%s(%r,%r)" % (
                       self.__class__.__name__
@@ -49,9 +52,18 @@ class Job(object):
     def find( self, name ):
         query = session.query(Job)
         return query.get_by(name = name)
+    
+    def GetPending(self, Machine):
+        return RunSchedule().find(Machine)
+
+    def delete(self):
+        session.delete(self)
+        session.flush()
+        
 
 
-class RunRecord(object):
+    
+class RunRecord(ASObject):
     def __repr__(self):
             return "%s(%r,%r)" % (
                       self.__class__.__name__
@@ -61,7 +73,10 @@ class RunRecord(object):
                     , self.end_time
                 )
 
+
+
 mapper (Job, job_table)
 mapper(Machine, machine_table)
+mapper (RunSchedule, runschedule_table)
 #mapper (RunRecord, runrecord_table)    
 
