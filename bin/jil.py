@@ -23,7 +23,7 @@ for line in jil:
     
     elif 'update_job' == parameter:
         if job != None:
-            commit_changes(job)
+            job.commit()
             
         job = Job().find(value)
         
@@ -38,7 +38,7 @@ for line in jil:
         
     elif 'insert_job' == parameter:
         if job != None:
-            commit_changes(job)
+            job.commit()
         
         print "Inserting job " + value + "\n"
         job = Job()
@@ -47,7 +47,7 @@ for line in jil:
     elif 'delete_job' == parameter:
         print "Deleting job " + value + "\n"
         job = Job().find(value)
-        delete_job(job)
+        job.delete()
         job = None
     
     elif job != None and parameter in ( 'std_in_file', 'std_err_file', 'std_out_file',
@@ -58,7 +58,7 @@ for line in jil:
 
             
 if (job != None):
-    commit_changes(job)
+    job.commit()
 
 print "Complete.\n"
 
