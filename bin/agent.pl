@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/perl -w
+
 
 # Copyright 2007 David Spadea
 # All rights reserved.
@@ -6,11 +7,11 @@
 # This code is release for use under the terms of the GNU General Public License, version 3.
 
 
-import sys
 
-sys.path.append('../lib')
+use strict;
+use warnings;
+use lib qw(../lib);
 
-from Database import *
+use AdvancedSchedule::Database;
 
-Job().GetRunnable("titan")
 
