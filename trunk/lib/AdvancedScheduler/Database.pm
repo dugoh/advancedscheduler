@@ -28,9 +28,12 @@ sub connect
 {
     my $class = shift;
     
-    my $db = DBI->connect('dbi:Pg:host=localhost;dbname=ads', 'ads', 'ads123');
+    my $db = DBI->connect('dbi:Pg:host=localhost;dbname=ads',
+                          'ads',
+                          'ads123',
+                          {RootClass => $class}
     
-    return bless ($db, $class);
+    return $db;
     
 }
 
