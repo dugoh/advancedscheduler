@@ -30,8 +30,8 @@ sub connect
     
     my $db = DBI->connect('dbi:Pg:host=localhost;dbname=ads',
                           'ads',
-                          'ads123',
-                          {RootClass => $class}
+                          'ads',
+                          {RootClass => $class});
     
     return $db;
     
