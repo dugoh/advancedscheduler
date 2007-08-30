@@ -11,12 +11,14 @@
 
 create table RunSchedule
 (
-	  machine	varchar(255) not null references Machine(name)
-	, jobid 	int not null references Job(jobid) on delete cascade
-	, next_run	timestamp
-	, condition	text 
+	  machine	 varchar(255) not null references Machine(name)
+	, jobid 	 int not null references Job(jobid) on delete cascade
+	, next_run	 timestamp
+	, condition	 text 
+	, assigned_agent varchar(256) -- really, do people have 200 char hostnames?
 
 	, primary key (jobid)
 );
 
 create index RunSched_Machine on RunSchedule(Machine);
+
