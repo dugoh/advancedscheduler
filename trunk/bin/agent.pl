@@ -15,6 +15,12 @@ use lib qw(../lib);
 use threads;
 use Thread::Queue;
 
+use English;
+use Sys::Hostname;
+
+my $agentid = join("-", hostname(), $PID, time);
+print "Starting AgentID $agentid\n";
+
 use YAML qw(freeze thaw);
 
 our $EXIT_FLAG : shared;
@@ -50,12 +56,12 @@ sub WorkManager
     my $db = AdvancedScheduler::Database->connect
         or die ("Work Manager was unable to connect to the database!");
         
-    my $sql = "select * from RunSchedule where Machine = ?" ;
+    my $sql = "select * from RunSchedule where Machine in ( ?, ?)" ;
     
     while (! $EXIT_FLAG )
     {
         my $sth = $db->prepare($sql);
-        $sth->execute('titan');
+        $sth->execute(hostname(), $agentid);
         
         while (my $jobdef = $sth->fetchrow_hashref)
         {

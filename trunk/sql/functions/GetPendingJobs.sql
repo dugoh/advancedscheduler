@@ -1,19 +1,20 @@
 /*
 
-select GetPendingJobs('titan');
+select GetPendingJobs('titan', '  ');
 
 select * from RunSchedule
 
-drop function GetPendingJobs(varchar)
+drop function GetPendingJobs(varchar, varchar)
 */
 
-create or replace function GetPendingJobs( varchar )
+create or replace function GetPendingJobs( varchar, varchar )
 returns setof int
 as $$
 
 		select JobID
 		from RunSchedule
 		where Machine = $1
-		and next_run <= now();
+		  and next_run <= now()
+		  and assigned_agent != $2;
 
-$$ language 'sql';
+$$ language SQL;
