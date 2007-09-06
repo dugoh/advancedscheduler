@@ -18,6 +18,8 @@ use Thread::Queue;
 use English;
 use Sys::Hostname;
 
+use Data::Dumper;
+
 my $agentid = join("-", hostname(), $PID, time);
 print "Starting AgentID $agentid\n";
 
@@ -32,15 +34,28 @@ $EXIT_FLAG = 0;
 
 use AdvancedScheduler::Database;
 
-$SIG{CHLD} = \&HandleExit;
-
-&WorkManager;
-
 sub HandleExit
 {
     lock ($EXIT_FLAG);
 
     $EXIT_FLAG = 1;
+}
+
+$SIG{TERM} = \&HandleExit;
+
+# Early implementation has this loop here, but eventually
+# this loop should be moved inside of each sub, and they
+# should run in different threads. I wasn't sure about
+# how SIGCHLD/fork/exec and system() interact with threads, so
+# I'm chickening out of that for the time being.
+
+while ( ! $EXIT_FLAG )
+{
+    &WorkManager;
+    
+    &ExecWork;
+    
+    sleep 2;
 }
 
 =head1 WorkManager
@@ -53,27 +68,55 @@ This does not exit until the $EXIT_FLAG is set by a SIGTERM.
 
 sub WorkManager
 {
-    my $db = AdvancedScheduler::Database->connect
+    my $db = AdvancedScheduler::Database->connect_cached
         or die ("Work Manager was unable to connect to the database!");
         
-    my $sql = "select * from RunSchedule where Machine in ( ?, ?)" ;
+    my $sql =<<SQL;
     
-    while (! $EXIT_FLAG )
+    select *
+    from RunSchedule sched
+         inner join Job
+            on sched.JobID = Job.JobID
+    where sched.Machine in ( ?, ?)
+
+SQL
+    
+    my $sth = $db->prepare($sql);
+    $sth->execute(hostname(), $agentid);
+    
+    while (my $jobdef = $sth->fetchrow_hashref)
     {
-        my $sth = $db->prepare($sql);
-        $sth->execute(hostname(), $agentid);
-        
-        while (my $jobdef = $sth->fetchrow_hashref)
         {
-            {
-                lock ($JobQueue);
-                $jobdef = freeze($jobdef);
-                print "Enqueuing:\n" . $jobdef . "\n\n";
-                $JobQueue->enqueue($jobdef);
-            }
+            lock ($JobQueue);
+            $jobdef = freeze($jobdef);
+            print scalar localtime(time) . " Enqueuing:\n" . $jobdef . "\n\n";
+            $JobQueue->enqueue($jobdef);
         }
+    }
+    
+    $sth->finish;
+}
+
+=head1 ExecWork
+
+Read the queue and run all scheduled commands
+
+Early implementation will just run them in serial as noted in the queue. This
+will eventually need to be some sort of parallel implementation. 
+
+=cut
+
+sub ExecWork
+{
+    while ( my $jobdef = $JobQueue->dequeue_nb )
+    {
+        $jobdef = thaw($jobdef);
+        print scalar localtime(time) . " Will execute: " . Dumper($jobdef);
         
-        sleep 5;
+        system($$jobdef{command});
+        
+        print "Return status = " . ($? >> 8) . "\n";
+        
     }
     
 }
