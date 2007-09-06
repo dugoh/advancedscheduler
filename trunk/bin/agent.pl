@@ -27,8 +27,10 @@ use YAML qw(freeze thaw);
 
 our $EXIT_FLAG : shared;
 our $JobQueue : shared;
+our $JobResults : shared;
 
 $JobQueue = new Thread::Queue;
+$JobResults = new Thread::Queue;
 
 $EXIT_FLAG = 0;
 
@@ -54,6 +56,8 @@ while ( ! $EXIT_FLAG )
     &WorkManager;
     
     &ExecWork;
+    
+    &SetJobStatus;
     
     sleep 2;
 }
@@ -117,6 +121,49 @@ sub ExecWork
         
         print "Return status = " . ($? >> 8) . "\n";
         
+        $$jobdef{ExitStatus} = ($? >> 8);
+        
+        $JobResults->enqueue( freeze($jobdef) );
+        
+        
     }
     
 }
+
+
+=head1 SetJobStatus
+
+
+=cut
+
+sub SetJobStatus
+{
+    
+    my $db = AdvancedScheduler::Database->connect_cached
+        or die ("Work Manager was unable to connect to the database!");
+        
+    my $sql =<<SQL;
+   
+        update Job
+        set Status = case ? when 0 then 'SU' else 'FA' end
+        where JobID = ?
+    
+SQL
+
+    my $sth = $db->prepare($sql);
+    
+    while (my $job = $JobResults->dequeue_nb )
+    {
+        my $status = thaw($job);
+        
+        print sprintf ("Setting status %d for jobid %d\n", $$status{ExitStatus}, $$status{jobid});
+        
+        $sth->execute($$status{ExitStatus}, $$status{jobid} )
+            or die ("SetJobStatus execute failed!");
+    }
+    
+    
+    $sth->finish;
+    
+}
+
