@@ -78,27 +78,32 @@ sub WorkManager
     my $sql =<<SQL;
     
     select *
-    from RunSchedule sched
-         inner join Job
-            on sched.JobID = Job.JobID
-    where sched.Machine in ( ?, ?)
+    from PendingJobs
+    where Machine = ?
 
 SQL
+
     
     my $sth = $db->prepare($sql);
-    $sth->execute(hostname(), $agentid);
+    $sth->execute(hostname());
     
     while (my $jobdef = $sth->fetchrow_hashref)
     {
         {
             lock ($JobQueue);
+            my $jobid = $$jobdef{jobid};
+            
             $jobdef = freeze($jobdef);
             print scalar localtime(time) . " Enqueuing:\n" . $jobdef . "\n\n";
             $JobQueue->enqueue($jobdef);
+            
+            &SetJobStatus($jobid, 'ST');
         }
     }
     
     $sth->finish;
+    
+    
 }
 
 =head1 ExecWork
@@ -106,7 +111,7 @@ SQL
 Read the queue and run all scheduled commands
 
 Early implementation will just run them in serial as noted in the queue. This
-will eventually need to be some sort of parallel implementation. 
+will eventually need to be some sordft of parallel implementation. 
 
 =cut
 
@@ -117,17 +122,13 @@ sub ExecWork
         $jobdef = thaw($jobdef);
         print scalar localtime(time) . " Will execute: " . Dumper($jobdef);
         
+        &SetJobStatus($$jobdef{jobid}, 'RU');
         system($$jobdef{command});
+        my $rc = ($? >> 8);
+        print "Return status = $rc\n";
         
-        print "Return status = " . ($? >> 8) . "\n";
-        
-        $$jobdef{ExitStatus} = ($? >> 8);
-        
-        $JobResults->enqueue( freeze($jobdef) );
-        
-        
+        &SetJobStatus($$jobdef{jobid}, ($rc ? 'FA' : 'SU'));
     }
-    
 }
 
 =head1 SetJobStatus
@@ -137,6 +138,7 @@ sub ExecWork
 
 sub SetJobStatus
 {
+    my ($jobid, $status) = @_;
     
     my $db = AdvancedScheduler::Database->connect_cached
         or die ("Work Manager was unable to connect to the database!");
@@ -144,23 +146,17 @@ sub SetJobStatus
     my $sql =<<SQL;
    
         update Job
-        set Status = case ? when 0 then 'SU' else 'FA' end
+        set Status = ? 
         where JobID = ?
-    
+        
 SQL
 
     my $sth = $db->prepare($sql);
     
-    while (my $job = $JobResults->dequeue_nb )
-    {
-        my $status = thaw($job);
+    print sprintf ("Setting status %s for jobid %d\n", $status, $jobid);
         
-        print sprintf ("Setting status %d for jobid %d\n", $$status{ExitStatus}, $$status{jobid});
-        
-        $sth->execute($$status{ExitStatus}, $$status{jobid} )
-            or die ("SetJobStatus execute failed!");
-    }
-    
+    $sth->execute($status, $jobid )
+        or die ("SetJobStatus execute failed!");
     
     $sth->finish;
     
