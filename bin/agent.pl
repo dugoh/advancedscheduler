@@ -77,13 +77,15 @@ sub WorkManager
     
     select *
     from PendingJobs
-    where Machine = ?;
+    where Machine = ?
+      and (assigned_agent is null
+           or assigned_agent != ?)
 
 SQL
 
     
     my $sth = $db->prepare($sql);
-    $sth->execute(hostname());
+    $sth->execute(hostname(), $agentid);
     
     while (my $jobdef = $sth->fetchrow_hashref)
     {
