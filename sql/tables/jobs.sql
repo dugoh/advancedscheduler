@@ -24,13 +24,12 @@ CREATE TABLE job
   start_mins text,
   start_times text,
   std_out_file text,
-  last_start_time date,
-  last_end_time date,
+  last_start_time timestamp with time zone,
+  last_end_time timestamp with time zone,
   condition text
 ) 
 WITH OIDS;
 ALTER TABLE job OWNER TO ads;
-
 
 
 
