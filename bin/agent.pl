@@ -57,8 +57,6 @@ while ( ! $EXIT_FLAG )
     
     &ExecWork;
     
-    &SetJobStatus;
-    
     sleep 2;
 }
 
@@ -79,7 +77,7 @@ sub WorkManager
     
     select *
     from PendingJobs
-    where Machine = ?
+    where Machine = ?;
 
 SQL
 
@@ -97,7 +95,7 @@ SQL
             print scalar localtime(time) . " Enqueuing:\n" . $jobdef . "\n\n";
             $JobQueue->enqueue($jobdef);
             
-            &SetJobStatus($jobid, 'ST');
+            $db->SetJobStatus($jobid, 'ST');
         }
     }
     
@@ -117,48 +115,22 @@ will eventually need to be some sordft of parallel implementation.
 
 sub ExecWork
 {
+    my $db = AdvancedScheduler::Database->connect_cached
+        or die ("ExecWork was unable to connect to the database!");
+        
     while ( my $jobdef = $JobQueue->dequeue_nb )
     {
         $jobdef = thaw($jobdef);
         print scalar localtime(time) . " Will execute: " . Dumper($jobdef);
         
-        &SetJobStatus($$jobdef{jobid}, 'RU');
+        $db->SetJobStatus($$jobdef{jobid}, 'RU');
         system($$jobdef{command});
         my $rc = ($? >> 8);
         print "Return status = $rc\n";
         
-        &SetJobStatus($$jobdef{jobid}, ($rc ? 'FA' : 'SU'));
+        $db->SetJobStatus($$jobdef{jobid}, ($rc ? 'FA' : 'SU'));
     }
 }
 
-=head1 SetJobStatus
 
-
-=cut
-
-sub SetJobStatus
-{
-    my ($jobid, $status) = @_;
-    
-    my $db = AdvancedScheduler::Database->connect_cached
-        or die ("Work Manager was unable to connect to the database!");
-        
-    my $sql =<<SQL;
-   
-        update Job
-        set Status = ? 
-        where JobID = ?
-        
-SQL
-
-    my $sth = $db->prepare($sql);
-    
-    print sprintf ("Setting status %s for jobid %d\n", $status, $jobid);
-        
-    $sth->execute($status, $jobid )
-        or die ("SetJobStatus execute failed!");
-    
-    $sth->finish;
-    
-}
 

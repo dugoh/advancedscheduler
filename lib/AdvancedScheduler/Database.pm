@@ -8,7 +8,33 @@ package AdvancedScheduler::Database::db;
 use DBI;
 use base qw(DBI::db);
 
+=head1 SetJobStatus
 
+
+=cut
+
+sub SetJobStatus
+{
+    my ($self, $jobid, $status) = @_;
+            
+    my $sql =<<SQL;
+   
+        update Job
+        set Status = ? 
+        where JobID = ?
+        
+SQL
+
+    my $sth = $self->prepare($sql);
+    
+    print sprintf ("Setting status %s for jobid %d\n", $status, $jobid);
+        
+    $sth->execute($status, $jobid )
+        or die ("SetJobStatus execute failed!");
+    
+    $sth->finish;
+    
+}
 
 
 package AdvancedScheduler::Database::st;
@@ -36,5 +62,7 @@ sub connect
     return $db;
     
 }
+
+
 
 1;

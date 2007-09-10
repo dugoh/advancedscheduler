@@ -5,8 +5,9 @@ as
 	from RunSchedule sched
 		inner join Job 
 			on sched.JobID = job.JobID
-	where next_run <= now()
-	  and assigned_agent is null;
+	where sched.next_run <= now()
+      and sched.assigned_agent is null 
+      and job.status = 'AC';
 
 /*
 
