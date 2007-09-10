@@ -6,15 +6,35 @@ declare nextrun timestamp;
 
 begin
 
-	delete from RunSchedule
-	where JobID = NEW.JobID;
-	
-	nextrun := CalcNextRuntime(NEW.JobID);
-
-	if nextrun is not null 
+	if NEW.status = OLD.status
 	then
-		insert into RunSchedule (Machine, JobID, Next_Run, Condition)
-		select NEW.Machine, NEW.JobID, nextrun, NEW.Condition;
+		return null;
+	end if;
+
+	if NEW.status = 'RU'
+	then
+		update Job
+		set Last_Start_Time = CURRENT_TIMESTAMP
+		where name = NEW.name;
+	end if;
+
+	if NEW.status in ('SU', 'FA')
+	then
+		update Job
+		set Last_End_Time = CURRENT_TIMESTAMP
+		where name = NEW.name;
+
+		delete from RunSchedule
+		where JobID = NEW.JobID;
+		
+		nextrun := CalcNextRuntime(NEW.JobID);
+
+		if nextrun is not null 
+		then
+			insert into RunSchedule (Machine, JobID, Next_Run, Condition)
+			select NEW.Machine, NEW.JobID, nextrun, NEW.Condition;
+		end if;
+
 	end if;
 
 	return NEW;
