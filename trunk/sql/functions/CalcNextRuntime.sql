@@ -1,14 +1,21 @@
---select CalcNextRuntime( 14 )
+--
+/*
+drop table Times;
+select CalcNextRuntime( 10 )
+*/
 -- select * from Times
--- drop table Times
--- drop function CalcNextRuntime(text)
+-- 
+-- drop function CalcNextRuntime(int)
 -- echo ('meh')
+
+
+
 create or replace function CalcNextRuntime( int)
 returns timestamp
 as $$
 
 declare
-	JobID alias for $1;
+	pJobID alias for $1;
 
 	jobrec RECORD;
 
@@ -21,14 +28,19 @@ declare
 
 begin
 
+	create temporary table times
+	(
+		starttime timestamp
+	) on commit drop;
+
 	-- Collect scheduling information
 
-	raise notice 'Determing scheduling information for jobid: %', JobID;
+	raise notice 'Determing scheduling information for jobid: %', pJobID;
 
 	select 
 	into jobrec *
 	from Job
-	where JobID = JobID;
+	where JobID = pJobID;
 
 	raise notice 'name: % start_mins: %  start_times: %   start_days: %', 
 		     jobrec.name, jobrec.start_mins, jobrec.start_times, jobrec.start_days;
@@ -43,12 +55,6 @@ begin
 	next current_day is. Instead of adding '1 day', we'd add (next day - current day) days. Should be straightforward.
 
 	*/
-
-
-	create temporary table times
-	(
-		starttime timestamp
-	) on commit drop;
 
 	-- start_mins processing
 	

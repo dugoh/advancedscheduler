@@ -11,10 +11,19 @@ begin
 		return null;
 	end if;
 
+	if NEW.status in ('AC', 'IN')
+	then
+		update Job
+		set   Last_Start_Time = NULL
+		    , Last_End_Time = NULL
+		where name = NEW.name;
+	end if;
+
 	if NEW.status = 'RU'
 	then
 		update Job
-		set Last_Start_Time = CURRENT_TIMESTAMP
+		set   Last_Start_Time = CURRENT_TIMESTAMP
+		    , Last_End_Time = NULL
 		where name = NEW.name;
 	end if;
 

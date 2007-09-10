@@ -64,7 +64,7 @@ sub forcestartjob
 SQL
 
     my $sth = $db->prepare($sql);
-    $sth->execute($$opts{Job} ) or return 1;
+    $sth->execute($$opts{Job} ) or ($db->rollback and return 1);
     
     $sql =<<SQL;
     
@@ -78,7 +78,7 @@ SQL
 SQL
 
     $sth = $db->prepare($sql);
-    $sth->execute($$opts{Job} ) or return 1;
+    $sth->execute($$opts{Job} ) or ($db->rollback and return 1);
     
     $sql =<<SQL;
 
@@ -100,7 +100,7 @@ SQL
 SQL
 
     $sth = $db->prepare($sql);
-    $sth->execute($$opts{Job} ) or return 1;
+    $sth->execute($$opts{Job} ) or ($db->rollback and return 1);
     
 
     
