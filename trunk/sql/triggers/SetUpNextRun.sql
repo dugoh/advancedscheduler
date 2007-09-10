@@ -11,6 +11,10 @@ begin
 		return null;
 	end if;
 
+	insert into RunRecord (JobID, Status, EventTime)
+	values (NEW.JobID, NEW.Status, CURRENT_TIMESTAMP);
+	
+
 	if NEW.status in ('AC', 'IN')
 	then
 		update Job
