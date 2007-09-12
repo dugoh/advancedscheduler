@@ -1,10 +1,10 @@
 update_job: run_true
 command: true
 date_conditions: 1
-start_mins: 0,10,20,30,40,50
+start_mins: 0,10,20,30,40,50,51,52,55
 start_days: mo,tu,we,th,fr,sa
 conditions: success(succjob) and s(sjob)
-std_out_file: /std/out/file3
-std_err_file: /std/err/file3
-std_in_file: /std/in/file3
+std_out_file: $ADSJOBLOG/run_true.log
+std_err_file: $ADSJOBLOG/run_true.err
+std_in_file:
 machine: titan

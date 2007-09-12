@@ -30,6 +30,12 @@ my (@parms, %parms);
 		command
 	     );
 
+my %callbacks = (
+	insert_job => \&insert_job,
+	update_job => \&update_job,
+	delete_job => \&delete_job
+);
+
 my $JIL;
 while (<>)
 {
@@ -39,13 +45,61 @@ while (<>)
 my $def = AdvancedScheduler::JobDefinition->Parse($JIL)
 	or die ('Unable to parse JIL.');
 
-my $sql = "insert into Job (" . join (", ", sort(@parms)) . ")\n"
-	.  "values (" . join(", ", map { "?" } sort @parms ) . ")\n";
+if ( $callbacks{$$def{ADSCOMMAND}} ) 
+{
+	my $rc = $callbacks{$$def{ADSCOMMAND}}->($ads, $def);
+	print "Database change ";
+	print $rc ? "SUCCEEDED!\n" : "FAILED!\n";
+	exit $rc ? 0 : 1;
+}
+else
+{
+	die ("Unknown command $$def{ADSCOMMAND}\n");
+}
 
-print $sql;
-my $sth = $ads->prepare($sql);
 
-print $sth->execute (map { $def->$_ } sort @parms) ? "SUCCESS" : "FAILURE";
-print "\n";
+sub insert_job
+{
+	my ($db, $jobdef) = @_;
 
-$ads->SetJobStatus($def->name, 'IN'); 
+	my $sql = "insert into Job (" . join (", ", sort(@parms)) . ")\n"
+		.  "values (" . join(", ", map { "?" } sort @parms ) . ")\n";
+
+	my $sth = $db->prepare($sql);
+
+	my $rc = $sth->execute (map { $def->$_ } sort @parms) ? 1 : 0;
+
+	$ads->SetJobStatus($$def{name}, 'IN') if ($rc); 
+
+	return $rc;
+}
+
+
+sub delete_job
+{
+	my ($db, $jobdef) = @_;
+
+	my $sql = "delete from Job  where name = ?";
+
+	my $sth = $db->prepare($sql);
+
+	return  $sth->execute ($$jobdef{name}) ? 1 : 0;
+}
+
+sub update_job
+{
+	my ($db, $jobdef) = @_;
+
+	my @parms = sort grep !/name/, @parms; 
+	my $sql = "update job set " . join(",\n\t", map { "$_ = ?" } @parms) . "\nwhere name = ?";
+
+	print $sql . "\n";
+
+	my $sth = $db->prepare($sql);
+
+	my @args = map{ $$def{$_} }@parms;
+	push @args, $$jobdef{name};
+
+	print "Query arguments are:\n" . join("\n", @args) . "\n";
+	return $sth->execute (@args) ? 1 : 0;
+}
