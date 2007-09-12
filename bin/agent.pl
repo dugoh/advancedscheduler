@@ -91,7 +91,7 @@ SQL
     {
         {
             lock ($JobQueue);
-            my $jobid = $$jobdef{jobid};
+            my $jobid = $$jobdef{name};
             
             $jobdef = freeze($jobdef);
             print scalar localtime(time) . " Enqueuing:\n" . $jobdef . "\n\n";
@@ -125,12 +125,12 @@ sub ExecWork
         $jobdef = thaw($jobdef);
         print scalar localtime(time) . " Will execute: " . Dumper($jobdef);
         
-        $db->SetJobStatus($$jobdef{jobid}, 'RU');
+        $db->SetJobStatus($$jobdef{name}, 'RU');
         system($$jobdef{command});
         my $rc = ($? >> 8);
         print "Return status = $rc\n";
         
-        $db->SetJobStatus($$jobdef{jobid}, ($rc ? 'FA' : 'SU'));
+        $db->SetJobStatus($$jobdef{name}, ($rc ? 'FA' : 'SU'));
     }
 }
 

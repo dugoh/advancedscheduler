@@ -6,9 +6,9 @@ declare nextrun timestamp;
 
 begin
 
-	if NEW.status = OLD.status
+	if TG_OP = 'UPDATE' and NEW.status = OLD.status
 	then
-		return null;
+		return NEW;
 	end if;
 
 	insert into RunRecord (JobID, Status, EventTime)
@@ -33,9 +33,11 @@ begin
 
 	if NEW.status in ('SU', 'FA')
 	then
+		
 		update Job
 		set Last_End_Time = CURRENT_TIMESTAMP
-		where name = NEW.name;
+		where name = NEW.name
+		  and NEW.status in ('SU', 'FA');
 
 		delete from RunSchedule
 		where JobID = NEW.JobID;
@@ -56,4 +58,4 @@ end;
 
 $$ language 'plpgsql';
 
-create trigger ScheduleNextRun after update or insert on Job for each row execute procedure SetUpNextRun(); 
+create trigger ScheduleNextRun after update on Job for each row execute procedure SetUpNextRun(); 

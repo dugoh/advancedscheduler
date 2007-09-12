@@ -28,10 +28,6 @@ declare
 
 begin
 
-	create temporary table times
-	(
-		starttime timestamp
-	) on commit drop;
 
 	-- Collect scheduling information
 
@@ -45,6 +41,7 @@ begin
 	raise notice 'name: % start_mins: %  start_times: %   start_days: %', 
 		     jobrec.name, jobrec.start_mins, jobrec.start_times, jobrec.start_days;
 
+	delete from UpcomingTimes where name = jobrec.name;
 	/* 
 
 	For the time being, we simply figure out all possible start times for the current and next hour, and
@@ -73,19 +70,19 @@ begin
 			select lpad(mins, 2, '0' ), curhr::text || ':' || mins::text
 			into mins, timestr;
 
-			insert into times (starttime)
-			select CURRENT_DATE + timestr::time;
+			insert into UpcomingTimes (name, starttime)
+			select jobrec.name, CURRENT_DATE + timestr::time;
 
-			insert into times (starttime)
-			select CURRENT_DATE + interval '1 day' + timestr::time;
+			insert into UpcomingTimes (name, starttime)
+			select jobrec.name, CURRENT_DATE + interval '1 day' + timestr::time;
 
 			timestr := ((curhr + 1) % 24)::text || ':' || mins;
 
-			insert into times (starttime)
-			select CURRENT_DATE + timestr::time;
+			insert into UpcomingTimes (name, starttime)
+			select jobrec.name, CURRENT_DATE + timestr::time;
 
-			insert into times (starttime)
-			select CURRENT_DATE + '1 day'::interval + timestr::time;
+			insert into UpcomingTimes (name, starttime)
+			select jobrec.name, CURRENT_DATE + '1 day'::interval + timestr::time;
 
 			counter := counter + 1;
 			mins := split_part( jobrec.start_mins, ',', counter);
@@ -105,11 +102,11 @@ begin
 		while ( length(timestr) > 0 ) 
 		loop
 
-			insert into times (starttime)
-			select CURRENT_DATE + timestr::time;
+			insert into UpcomingTimes (name,starttime)
+			select jobrec.name, CURRENT_DATE + timestr::time;
 
-			insert into times (starttime)
-			select CURRENT_DATE + interval '1 day' + timestr::time;
+			insert into UpcomingTimes (name, starttime)
+			select jobrec.name, CURRENT_DATE + interval '1 day' + timestr::time;
 
 			counter := counter + 1;
 			timestr := split_part( jobrec.start_times, ',', counter);
@@ -121,8 +118,9 @@ begin
 
 	select min(starttime)
 	into nextstart
-	from Times
-	where starttime >= now();
+	from UpcomingTimes
+	where starttime >= now()
+	  and name = jobrec.name;
 
 	--drop table Times;
 
