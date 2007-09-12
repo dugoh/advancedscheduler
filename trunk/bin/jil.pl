@@ -10,7 +10,7 @@ use warnings;
 
 use Data::Dumper;
 
-use lib qw(../lib);
+use lib ("$ENV{ADSROOT}/lib");
 
 use AdvancedScheduler::Database;
 use AdvancedScheduler::JobDefinition;
