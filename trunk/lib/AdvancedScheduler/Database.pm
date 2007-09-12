@@ -15,21 +15,21 @@ use base qw(DBI::db);
 
 sub SetJobStatus
 {
-    my ($self, $jobid, $status) = @_;
+    my ($self, $jobname, $status) = @_;
             
     my $sql =<<SQL;
    
         update Job
         set Status = ? 
-        where JobID = ?
+        where Name = ?
         
 SQL
 
     my $sth = $self->prepare($sql);
     
-    print sprintf ("Setting status %s for jobid %d\n", $status, $jobid);
+    print sprintf ("Setting status %s for job %s\n", $status, $jobname);
         
-    $sth->execute($status, $jobid )
+    $sth->execute($status, $jobname )
         or die ("SetJobStatus execute failed!");
     
     $sth->finish;
@@ -54,9 +54,9 @@ sub connect
 {
     my $class = shift;
     
-    my $db = DBI->connect('dbi:Pg:host=localhost;dbname=ads',
-                          'ads',
-                          'ads',
+    my $db = DBI->connect(sprintf ('dbi:Pg:host=%s;dbname=%s', $ENV{ADSHOST}, $ENV{ADSDB}),
+                          $ENV{ADSUSER},
+                          $ENV{ADSPASSWD},
                           {RootClass => $class});
     
     return $db;
