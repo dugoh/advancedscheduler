@@ -108,7 +108,7 @@ sub ShowRunRecords
 	my ($db, $opts) = @_;
 
 	my $jobpat = $$opts{jobname};
-	my $fmt = $$opts{format};
+	my $format = $$opts{format};
 
 	my $sql =<<SQL;
 
