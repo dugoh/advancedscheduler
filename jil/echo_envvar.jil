@@ -7,4 +7,4 @@ conditions: notrunning(nrjob) and success(succjob) and s(sjob)
 std_out_file: /std/out/file
 std_err_file: /std/err/file
 std_in_file: /std/in/file
-machine: dspadea-vmware
+machine: titan

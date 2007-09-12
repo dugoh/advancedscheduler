@@ -10,7 +10,7 @@
 
 use strict;
 use warnings;
-use lib qw(../lib);
+use lib ("$ENV{ADSROOT}/lib");
 
 use threads;
 use Thread::Queue;

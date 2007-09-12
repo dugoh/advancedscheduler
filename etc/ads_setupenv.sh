@@ -8,3 +8,5 @@ export ADSROOT=$HOME/dev/advancedscheduler
 export ADSLOG=$ADSROOT/log
 export ADSJOBLOG=$ADSLOG/jobs
 export PATH=$PATH:$ADSROOT/bin
+
+export PGPASSWORD=$ADSPASSWD

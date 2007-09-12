@@ -7,7 +7,7 @@
 # This code is release for use under the terms of the GNU General Public License, version 3.
 
 
-use lib qw(../lib);
+use lib ("$ENV{ADSROOT}/lib");
 
 use strict;
 use warnings;
