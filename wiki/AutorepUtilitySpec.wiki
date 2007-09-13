@@ -14,11 +14,16 @@ Autorep is a command-line utility used primarily for extracting job definitions 
 
 Sample command lines:
 
-# report the status for all jobs matching the pattern.
-autorep -J My%Job   
+ * report the status for all jobs matching the pattern.
+ autorep -J My%Job   
 
-# output JIL for all jobs matching a pattern
-autorep -qJ My_Job%xyz
+ * output JIL for all jobs matching a pattern
+ autorep -q -J My_Job%xyz
 
-More advanced reporting functionality will come along later. I think this
-covers the general use case. 
+
+You can also use the --format parameter to specify a report output format. The default is the normal Autosys-style autorep output. The other two, which are more friendly to statistics collecting scripts and other parsers, are XML and YAML. 
+
+
+
+
+
