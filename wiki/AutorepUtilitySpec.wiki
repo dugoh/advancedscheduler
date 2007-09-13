@@ -1,13 +1,12 @@
-#summary One-sentence summary of this page.
-#labels autorep,Phase-Requirements
+#summary Autorep Utility Specification
+#labels autorep,Phase-Implementation
 
 = Introduction =
 
-Add your content here.
+Autorep is a command-line utility used primarily for extracting job definitions and run record information from the database. 
 
 
 = Details =
-Need an autorep script that will:
 
   * Default behavior is to report current status for a list of jobs matching a pattern. Patterns will use SQL-style '%' for wildcards (E.g. %job would match anything ending in 'job'. My%job% would match My_New_job_1, My_job, Myjob, etc. )
   * Output JIL for a list of jobs matching the same-style pattern. This is selected via the '-q' switch. 
