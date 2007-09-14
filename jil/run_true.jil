@@ -4,7 +4,7 @@ date_conditions: 1
 start_mins: 0,30,50
 start_days: mo,tu,we,th,fr
 conditions: notrunning(nrjob) and success(succjob) and s(sjob)
-std_out_file: /std/out/file2
-std_err_file: /std/err/file2
-std_in_file: /std/in/file2
+std_out_file:
+std_err_file:
+std_in_file:
 machine: titan

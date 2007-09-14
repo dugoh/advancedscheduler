@@ -19,3 +19,6 @@ CREATE TABLE runrecord
 ) 
 WITH OIDS;
 ALTER TABLE runrecord OWNER TO ads;
+
+create index RunRecord_JobID on RunRecord(JobID);
+create index RunRecord_Status on RunRecord(Status);
