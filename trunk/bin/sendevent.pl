@@ -24,7 +24,9 @@ GetOptions( 'E=s' => \$opts{Event},
             'J=s' => \$opts{Job},
             'job=s' => \$opts{Job},
             'P=i' => \$opts{Priority},
-            'priority=i' => \$opts{Priority}
+            'priority=i' => \$opts{Priority},
+            'S=s' => \$opts{Status},
+            'status=s' => \$opts{Status}
           );
 
 #print "Got options: " . Dumper(\%opts);
@@ -32,7 +34,8 @@ GetOptions( 'E=s' => \$opts{Event},
 my $db = AdvancedScheduler::Database->connect_cached;
 
 my %events = (
-  forcestartjob => \&forcestartjob
+    forcestartjob => \&forcestartjob
+  , setstatus => \&setstatus
 );
 
 my $event = $opts{Event};
@@ -108,4 +111,12 @@ SQL
     
     return 0;
 
+}
+
+sub setstatus
+{
+    my ($db, $opts) = @_;
+    
+    $db->SetJobStatus($$opts{Job}, $$opts{Status});
+    
 }
