@@ -36,32 +36,50 @@ my %callbacks = (
 	delete_job => \&delete_job
 );
 
-my $JIL;
+my ($JIL, $exitcd);
+
 while (<>)
 {
+	if ($_ =~ /insert_job|update_job|delete_job/)
+	{
+		if ($JIL)
+		{
+			$exitcd += &ProcessCommand($JIL);
+			$JIL = undef;
+		}
+	}
+	
 	$JIL .= $_;
-}
-
-my $def = AdvancedScheduler::JobDefinition->Parse($JIL)
-	or die ('Unable to parse JIL.');
-
-if ( $callbacks{$$def{ADSCOMMAND}} ) 
-{
-	$ads->begin_work;
-	my $rc = $callbacks{$$def{ADSCOMMAND}}->($ads, $def);
-	print "Database change ";
-	print $rc ? "SUCCEEDED!\n" : "FAILED!\n";
 	
-	if ($rc) { $ads->commit; }
-	else { $ads->rollback; }
-	
-	exit ($rc ? 0 : 1);
-}
-else
-{
-	die ("Unknown command $$def{ADSCOMMAND}\n");
 }
 
+$exitcd += &ProcessCommand($JIL);
+
+exit ($exitcd > 0 ? 1 : 0);
+
+sub ProcessCommand
+{
+	my $def = AdvancedScheduler::JobDefinition->Parse($JIL)
+		or die ('Unable to parse JIL.');
+	
+	if ( $callbacks{$$def{ADSCOMMAND}} ) 
+	{
+		$ads->begin_work;
+		my $rc = $callbacks{$$def{ADSCOMMAND}}->($ads, $def);
+		print "Database change ";
+		print $rc ? "SUCCEEDED!\n" : "FAILED!\n";
+		
+		if ($rc) { $ads->commit; }
+		else { $ads->rollback; }
+		
+		return ($rc ? 0 : 1);
+	}
+	else
+	{
+		warn ("Unknown command $$def{ADSCOMMAND}\n");
+		return 2;
+	}
+}
 
 sub insert_job
 {
@@ -106,7 +124,7 @@ sub update_job
 
 	my $sth = $db->prepare($sql);
 
-	my @args = map{ $$def{$_} }@parms;
+	my @args = map{ $$jobdef{$_} }@parms;
 	push @args, $$jobdef{name};
 
 	print "Query arguments are:\n" . join("\n", @args) . "\n";
