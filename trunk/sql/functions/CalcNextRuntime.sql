@@ -1,7 +1,9 @@
 --
 /*
 drop table Times;
-select CalcNextRuntime( 10 )
+select CalcNextRuntime( 23 )
+select * from UpcomingTimes
+select * from job
 */
 -- select * from Times
 -- 
@@ -31,15 +33,15 @@ begin
 
 	-- Collect scheduling information
 
-	raise notice 'Determing scheduling information for jobid: %', pJobID;
+	--raise notice 'Determing scheduling information for jobid: %', pJobID;
 
 	select 
 	into jobrec *
 	from Job
 	where JobID = pJobID;
 
-	raise notice 'name: % start_mins: %  start_times: %   start_days: %', 
-		     jobrec.name, jobrec.start_mins, jobrec.start_times, jobrec.start_days;
+	--raise notice 'name: % start_mins: %  start_times: %   start_days: %', 
+	--	     jobrec.name, jobrec.start_mins, jobrec.start_times, jobrec.start_days;
 
 	delete from UpcomingTimes where name = jobrec.name;
 	/* 
@@ -123,6 +125,8 @@ begin
 	  and name = jobrec.name;
 
 	--drop table Times;
+	
+	raise notice 'Next scheduled start for % is %', jobrec.name, nextstart; 
 
 	return nextstart;
 
