@@ -47,10 +47,15 @@ my $def = AdvancedScheduler::JobDefinition->Parse($JIL)
 
 if ( $callbacks{$$def{ADSCOMMAND}} ) 
 {
+	$ads->begin_work;
 	my $rc = $callbacks{$$def{ADSCOMMAND}}->($ads, $def);
 	print "Database change ";
 	print $rc ? "SUCCEEDED!\n" : "FAILED!\n";
-	exit $rc ? 0 : 1;
+	
+	if ($rc) { $ads->commit; }
+	else { $ads->rollback; }
+	
+	exit ($rc ? 0 : 1);
 }
 else
 {
@@ -67,10 +72,14 @@ sub insert_job
 
 	my $sth = $db->prepare($sql);
 
-	my $rc = $sth->execute (map { $def->$_ } sort @parms) ? 1 : 0;
+	my $rc = $sth->execute (map { $jobdef->$_ } sort @parms);
 
-	$ads->SetJobStatus($$def{name}, 'IN') if ($rc); 
-
+	if ($rc)
+	{
+		$sth = $ads->prepare("select ScheduleNextRun(?)");
+		$rc = $sth->execute($jobdef->name);
+	}
+	
 	return $rc;
 }
 
@@ -79,18 +88,18 @@ sub delete_job
 {
 	my ($db, $jobdef) = @_;
 
-	my $sql = "delete from Job  where name = ?";
+	my $sql = "delete from Job where name = ?";
 
 	my $sth = $db->prepare($sql);
 
-	return  $sth->execute ($$jobdef{name}) ? 1 : 0;
+	return  $sth->execute ($$jobdef{name});
 }
 
 sub update_job
 {
 	my ($db, $jobdef) = @_;
 
-	my @parms = sort grep !/name/, @parms; 
+	my @parms = sort grep !/name/, sort keys %{$jobdef}; 
 	my $sql = "update job set " . join(",\n\t", map { "$_ = ?" } @parms) . "\nwhere name = ?";
 
 	print $sql . "\n";
@@ -101,5 +110,5 @@ sub update_job
 	push @args, $$jobdef{name};
 
 	print "Query arguments are:\n" . join("\n", @args) . "\n";
-	return $sth->execute (@args) ? 1 : 0;
+	return $sth->execute (@args);
 }

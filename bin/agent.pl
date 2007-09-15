@@ -20,8 +20,11 @@ use Sys::Hostname;
 
 use Data::Dumper;
 
+print "**** ADVANCED DISTRIBUTED SCHEDULER ****\n\n";
+
 my $agentid = join("-", hostname(), $PID, time);
 print "Starting AgentID $agentid\n";
+print "Start time is: " . scalar(localtime) . "\n\n";
 
 use YAML qw(freeze thaw);
 
@@ -60,10 +63,12 @@ while (1)
     sleep 1;
 }
 
+print "MainLoop: Got EXIT_FLAG. Waiting for threads to exit.\n";
+
 $manager->join;
 $worker->join;
 
-print "MainLoop: Got EXIT_FLAG. Quitting.\n";
+print "MainLoop: Threads exited. Quitting.\n";
 exit 0;
 
 =head1 WorkManager
@@ -163,7 +168,7 @@ sub ExecWork
         sleep 1;
     }
     
-    print "WorkManager: Got EXIT_FLAG. Quitting.\n";
+    print "ExecWork: Got EXIT_FLAG. Quitting.\n";
     return 0;
 }
 
@@ -176,12 +181,11 @@ sub CreateCmd
     
     $in ||= '/dev/null' unless ($in);
     $out ||= "$ENV{ADSJOBLOG}/$$jobdef{name}.log";
-    $err ||= $out;
 
     my $cmd = $$jobdef{command};
-    $cmd .= " < $in";
-    $cmd .= " >>$out";
-    $cmd .= " 2>>$err";
+    $cmd .= " < $in ";
+    $cmd .= " >>$out ";
+    $cmd .= $err ? " 2>>$err " : ' 2>&1 ';
     
     return $cmd;
 }
