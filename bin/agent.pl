@@ -17,7 +17,7 @@ use Thread::Queue;
 
 use English;
 use Sys::Hostname;
-
+use Time::HiRes qw(usleep);
 use Data::Dumper;
 
 print "**** ADVANCED DISTRIBUTED SCHEDULER ****\n\n";
@@ -31,9 +31,11 @@ use YAML qw(freeze thaw);
 our $EXIT_FLAG : shared;
 our $JobQueue : shared;
 our $JobResults : shared;
+our $StatQueue : shared;
 
 $JobQueue = new Thread::Queue;
 $JobResults = new Thread::Queue;
+$StatQueue = new Thread::Queue;
 
 $EXIT_FLAG = 0;
 
@@ -56,17 +58,19 @@ $SIG{TERM} = \&HandleExit;
 
 my $manager = threads->create(\&WorkManager);    
 my $worker = threads->create(\&ExecWork);
+my $statusmanager = threads->create(\&StatusManager);
 
 while (1)
 {
     last if $EXIT_FLAG;
-    sleep 1;
+    sleep 3;
 }
 
 print "MainLoop: Got EXIT_FLAG. Waiting for threads to exit.\n";
 
 $manager->join;
 $worker->join;
+$statusmanager->join;
 
 print "MainLoop: Threads exited. Quitting.\n";
 exit 0;
@@ -111,13 +115,13 @@ SQL
                 $jobdef = freeze($jobdef);
                 $JobQueue->enqueue($jobdef);
                 
-                $db->SetJobStatus($jobid, 'ST');
+                SetJobStatus($jobid, 'ST');
             }
         }
         
         $sth->finish;
         
-        sleep 2; # Only query DB every two seconds.
+        sleep 2;
     }
     
     print "WorkManager: Got EXIT_FLAG. Quitting.\n";
@@ -142,30 +146,33 @@ sub ExecWork
         
     while ( ! $EXIT_FLAG )
     {
+        while ( $JobQueue->pending)
         {
-            lock($JobQueue);
-            $jobdef = $JobQueue->dequeue_nb;
+            {
+                lock($JobQueue);
+                $jobdef = $JobQueue->dequeue_nb;
+            }
+            
+            if ($jobdef)
+            {
+                $jobdef = thaw($jobdef);
+                print scalar localtime(time) . " Will execute: " . $$jobdef{name} . "\n";
+                
+                SetJobStatus($$jobdef{name}, 'RU');
+                
+                my $cmd = &CreateCmd($jobdef);
+                
+                print $$jobdef{name} . ": Command is:\n$cmd\n";
+                system($cmd);
+                
+                my $rc = ($? >> 8);
+                print "Return status = $rc\n";
+                
+                SetJobStatus($$jobdef{name}, ($rc ? 'FA' : 'SU'));
+            }
         }
         
-        if ($jobdef)
-        {
-            $jobdef = thaw($jobdef);
-            print scalar localtime(time) . " Will execute: " . $$jobdef{name} . "\n";
-            
-            $db->SetJobStatus($$jobdef{name}, 'RU');
-            
-            my $cmd = &CreateCmd($jobdef);
-            
-            print $$jobdef{name} . ": Command is:\n$cmd\n";
-            system($cmd);
-            
-            my $rc = ($? >> 8);
-            print "Return status = $rc\n";
-            
-            $db->SetJobStatus($$jobdef{name}, ($rc ? 'FA' : 'SU'));
-        }
-        
-        sleep 1;
+        usleep(250);
     }
     
     print "ExecWork: Got EXIT_FLAG. Quitting.\n";
@@ -190,4 +197,56 @@ sub CreateCmd
     return $cmd;
 }
 
+sub SetJobStatus
+{
+    my ($jobname, $status) = @_;
 
+    {
+        lock($StatQueue);
+        $StatQueue->enqueue( freeze ({ name => $jobname, status => $status} ));
+    }
+    
+    return 1; 
+}
+
+
+
+# If this queue gets backed up for some reason, it could cause some apparent
+# distortion in the event times. If that happens, we'll need to capture
+# the enqueue time in SetJobStatus and use that as the event time,
+# rather than the time at processing.
+# Except for periods of extremely high load, the status should be updated in the
+# database almost instantaneously, so it's better to let the database
+# set the times on the record rather than using the host clock to get the enqueue time.
+
+sub StatusManager
+{
+    my ($stat);
+ 
+    my $db = AdvancedScheduler::Database->connect;
+    
+    while (! $EXIT_FLAG)
+    {
+        while ( $StatQueue->pending )
+        {
+            
+            {
+                lock($StatQueue);
+                $stat = $StatQueue->dequeue_nb;
+            }
+            
+            if ($stat)
+            {
+                $stat = thaw($stat);
+            
+                $db->SetJobStatus($$stat{name}, $$stat{status});
+            }
+        }
+        
+        usleep (250);
+        
+    }
+    
+    print "StatusManager: Got EXIT_FLAG. Quitting.\n";
+    return 0;
+}
