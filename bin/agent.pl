@@ -187,7 +187,7 @@ sub CreateCmd
         ($$jobdef{std_in_file}, $$jobdef{std_out_file}, $$jobdef{std_err_file});
     
     $in ||= '/dev/null' unless ($in);
-    $out ||= "$ENV{ADSJOBLOG}/$$jobdef{name}.$(date +'%Y%m%d').log";
+    $out ||= $ENV{ADSJOBLOG} . "/" . $$jobdef{name} . '.$(date +"%Y%m%d").log';
 
     my $cmd = $$jobdef{command};
     $cmd .= " < $in ";
