@@ -14,11 +14,11 @@
 CREATE TABLE runrecord
 ( 
 	jobid int not null references job(jobid) on delete cascade on update cascade, 
-	status varchar(10),
-	eventtime timestamp
+	status    varchar(10),
+	starttime timestamp with time zone,
+	endtime   timestamp with time zone
 ) 
 WITH OIDS;
 ALTER TABLE runrecord OWNER TO ads;
 
 create index RunRecord_JobID on RunRecord(JobID);
-create index RunRecord_Status on RunRecord(Status);

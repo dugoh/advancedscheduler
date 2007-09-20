@@ -33,15 +33,10 @@ begin
 
 	-- Collect scheduling information
 
-	--raise notice 'Determing scheduling information for jobid: %', pJobID;
-
 	select 
 	into jobrec *
 	from Job
 	where JobID = pJobID;
-
-	--raise notice 'name: % start_mins: %  start_times: %   start_days: %', 
-	--	     jobrec.name, jobrec.start_mins, jobrec.start_times, jobrec.start_days;
 
 	delete from UpcomingTimes where name = jobrec.name;
 	/* 
@@ -124,8 +119,6 @@ begin
 	where starttime >= now()
 	  and name = jobrec.name;
 
-	--drop table Times;
-	
 	raise notice 'Next scheduled start for % is %', jobrec.name, nextstart; 
 
 	return nextstart;
