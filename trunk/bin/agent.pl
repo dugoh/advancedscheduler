@@ -20,6 +20,8 @@ use Sys::Hostname;
 use Time::HiRes qw(usleep);
 use Data::Dumper;
 
+$| = 1;
+
 print "**** ADVANCED DISTRIBUTED SCHEDULER ****\n\n";
 
 my $agentid = join("-", hostname(), $PID, time);
