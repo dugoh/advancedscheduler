@@ -2,6 +2,9 @@ create or replace function SetUpNextRun()
 returns trigger
 as $$
 
+declare
+	tsEndTime timestamp with time zone;
+
 begin
 
 	if TG_OP = 'UPDATE' and NEW.status = OLD.status
@@ -9,8 +12,6 @@ begin
 		return NEW;
 	end if;
 
-	insert into RunRecord (JobID, Status, EventTime)
-	values (NEW.JobID, NEW.Status, CURRENT_TIMESTAMP);
 
 	if NEW.status in ('AC', 'IN')
 	then
@@ -31,9 +32,15 @@ begin
 
 	if NEW.status in ('SU', 'FA')
 	then        
+
+		tsEndTime := CURRENT_TIMESTAMP;
+
 	        update Job
-		set Last_End_Time = CURRENT_TIMESTAMP
+		set Last_End_Time = tsEndTime
 		where name = NEW.name;
+
+		insert into RunRecord (JobID, Status, StartTime, EndTime)
+		values (NEW.JobID, NEW.Status, NEW.Last_Start_Time, tsEndTime);
 		  
                 perform ScheduleNextRun(NEW.Name);
 	end if;
