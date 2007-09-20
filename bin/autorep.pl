@@ -65,6 +65,7 @@ sub ShowJobDefs
 
 	select 
                 name as insert_job,
+                namespace,
                 command,
                 condition,
                 machine,

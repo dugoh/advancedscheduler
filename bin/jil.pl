@@ -21,6 +21,7 @@ my $ads = AdvancedScheduler::Database->connect
 my (@parms, %parms);
 @parms = qw( 
 		name
+		namespace
 		std_in_file 
 		std_err_file 
 		std_out_file
@@ -62,8 +63,15 @@ sub ProcessCommand
 	my $def = AdvancedScheduler::JobDefinition->Parse($JIL)
 		or die ('Unable to parse JIL.');
 	
+	# If namespace: is defined in JIL, use it. Otherwise,
+	# consult the environment.
+	$$def{namespace} ||= $ENV{ADSNAMESPACE};
+	
 	if ( $callbacks{$$def{ADSCOMMAND}} ) 
 	{
+		print "Issuing " . $$def{ADSCOMMAND} . " call for "
+		      . join ("^", $$def{name}, $$def{namespace}) . "\n";
+			      
 		$ads->begin_work;
 		my $rc = $callbacks{$$def{ADSCOMMAND}}->($ads, $def);
 		print "Database change ";
@@ -106,26 +114,30 @@ sub delete_job
 {
 	my ($db, $jobdef) = @_;
 
-	my $sql = "delete from Job where name = ?";
+	my $sql = "delete from Job where namespace = ? and name = ?";
 
 	my $sth = $db->prepare($sql);
 
-	return  $sth->execute ($$jobdef{name});
+	return  $sth->execute ($$jobdef{namespace}, $$jobdef{name});
 }
 
 sub update_job
 {
 	my ($db, $jobdef) = @_;
 
-	my @parms = sort grep !/name/, sort keys %{$jobdef}; 
-	my $sql = "update job set " . join(",\n\t", map { "$_ = ?" } @parms) . "\nwhere name = ?";
+	# name and namespace are primary key fields, and cannot be changed
+	# via update_job. I'm thinking a new JIL command, move_namespace:
+	# or something can accomplish that. 
+	my @parms = sort grep (!/name/, grep(!/namespace/, keys %{$jobdef})); 
+	my $sql = "update job set " . join(",\n\t", map { "$_ = ?" } @parms)
+		. "\nwhere namespace = ? and name = ?";
 
 	print $sql . "\n";
 
 	my $sth = $db->prepare($sql);
 
 	my @args = map{ $$jobdef{$_} }@parms;
-	push @args, $$jobdef{name};
+	push @args, ($$jobdef{namespace}, $$jobdef{name});
 
 	print "Query arguments are:\n" . join("\n", @args) . "\n";
 	return $sth->execute (@args);

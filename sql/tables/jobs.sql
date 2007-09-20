@@ -13,12 +13,13 @@
 
 CREATE TABLE job
 (
-  jobid serial primary key,
+  namespace varchar(30),
+  name text unique,
+  machine varchar(255) references Machine(name) on update cascade,
+  jobid serial unique,
   status varchar(10) not null default 'IN',
   std_in_file text,
   std_err_file text,
-  name text unique,
-  machine varchar(255) references Machine(name) on update cascade,
   command text,
   start_days text,
   start_mins text,
@@ -26,7 +27,9 @@ CREATE TABLE job
   std_out_file text,
   last_start_time timestamp with time zone,
   last_end_time timestamp with time zone,
-  condition text
+  condition text,
+
+  constraint JobPK primary key (namespace, name)
 ) 
 WITH OIDS;
 ALTER TABLE job OWNER TO ads;
