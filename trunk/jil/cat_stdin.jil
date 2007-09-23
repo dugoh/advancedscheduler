@@ -4,5 +4,4 @@ date_conditions: 1
 start_mins: 0,5,10,15,20,25,30,35,40,45,50,55
 start_days: mo,tu,we,th,fr
 conditions: notrunning(nrjob) and success(succjob) and s(sjob)
-machine: dspadea-vmware
 std_in_file: /home/dspadea/dev/advancedscheduler/jil/cat_stdin.jil
