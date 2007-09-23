@@ -34,7 +34,7 @@ delete_job takes no detail parameters, apart from the name of the job.
 
 As for insert_job and update_job, the following attributes may be supplied in the JIL:
 
-  * machine: the machine on which the job should be executed
+  * machine: the machine on which the job should be executed. If not specified, then the machine running the client will be assumed. This may also be set to 'all' if you want every machine to run a particular job.
   * command: the actual command to be executed
   * start_mins: which minutes the job should be started every hour. This is a comma-separated list of minutes, e.g. 0,15,30,45
   * start_times: actual times per day the job should be started. This is a comma-separated list of times, e.g. "5:15,15:30,23:59"
@@ -50,3 +50,4 @@ As for insert_job and update_job, the following attributes may be supplied in th
 TO DO: Add File Watcher and Box Job information
 
 
+ 
