@@ -1,11 +1,14 @@
 TYPES=functions \
 	tables \
 	triggers \
-	views
+	views \
+	roles
 
 .PHONY: $(TYPES)
 
 all: $(TYPES)
+
+tables: roles
 
 views: tables
 
