@@ -9,6 +9,7 @@ use strict;
 use warnings;
 
 use Data::Dumper;
+use Sys::Hostname;
 
 use lib ("$ENV{ADSROOT}/lib");
 
@@ -93,6 +94,15 @@ sub insert_job
 {
 	my ($db, $jobdef) = @_;
 
+	$$jobdef{machine} = lc ($$jobdef{machine});
+
+	unless ($$jobdef{machine})
+	{
+		my $host = lc hostname();
+		print "Warning: No machine specified, so assuming '$host'\n";
+		$$jobdef{machine} = $host; # If no host given, assume current.
+	}
+	
 	my $sql = "insert into Job (" . join (", ", sort(@parms)) . ")\n"
 		.  "values (" . join(", ", map { "?" } sort @parms ) . ")\n";
 

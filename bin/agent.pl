@@ -94,7 +94,7 @@ sub WorkManager
     
     select *
     from PendingJobs
-    where Machine = ?
+    where (Machine = ? or Machine = 'all')
       and (assigned_agent is null
            or assigned_agent != ?)
 
@@ -112,6 +112,13 @@ SQL
             {
                 lock ($JobQueue);
                 my $jobid = $$jobdef{name};
+                
+                unless ($$jobdef{machine} == 'all')
+                {
+                    my $sql = 'update runschedule set Assigned_Agent = ? where jobid = ?';
+                    my $update = $db->prepare($sql);
+                    $update->execute($agentid, $$jobdef{jobid});
+                }
                 
                 print scalar localtime(time) . " Enqueuing:" . $$jobdef{name} . "\n";
                 $jobdef = freeze($jobdef);
@@ -174,7 +181,7 @@ sub ExecWork
             }
         }
         
-        usleep(250);
+        sleep 1;
     }
     
     print "ExecWork: Got EXIT_FLAG. Quitting.\n";
@@ -245,7 +252,7 @@ sub StatusManager
             }
         }
         
-        usleep (250);
+        sleep 1;
         
     }
     
