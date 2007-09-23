@@ -55,8 +55,8 @@ sub connect
     my $class = shift;
     
     my $db = DBI->connect(sprintf ('dbi:Pg:host=%s;dbname=%s', $ENV{ADSHOST}, $ENV{ADSDB}),
-                          $ENV{ADSUSER},
-                          $ENV{ADSPASSWD},
+                          $ENV{ADSUSER} ? $ENV{ADSUSER} : undef,
+                          $ENV{ADSUSER} ? $ENV{ADSPASSWD} : $ENV{PGPASSWORD},
                           {RootClass => $class});
     
     return $db;

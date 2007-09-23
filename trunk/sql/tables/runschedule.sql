@@ -20,5 +20,10 @@ create table RunSchedule
 	, primary key (jobid)
 );
 
+GRANT ALL ON TABLE runschedule TO "ADSAdmin" WITH GRANT OPTION;
+GRANT SELECT, REFERENCES, TRIGGER ON TABLE runschedule TO "ADSViewer";
+GRANT ALL ON TABLE runschedule TO "ADSOperator";
+
+
 create index RunSched_Machine on RunSchedule(Machine);
 

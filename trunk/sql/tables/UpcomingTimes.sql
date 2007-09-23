@@ -6,10 +6,14 @@ This code is release for use under the terms of the GNU General Public License, 
 */
 --drop table upcomingtimes
 
-create table UpcomingTimes
+create table upcomingtimes
 (
 	Name text references job(name) on delete cascade on update cascade,
 	StartTime timestamp
 );
 
-create index UpcTimes_name on UpcomingTimes(name);
+GRANT ALL ON TABLE upcomingtimes TO "ADSAdmin" WITH GRANT OPTION;
+GRANT SELECT ON TABLE upcomingtimes TO "ADSViewer";
+GRANT SELECT ON TABLE upcomingtimes TO "ADSOperator";
+
+create index UpcTimes_name on upcomingtimes(name);

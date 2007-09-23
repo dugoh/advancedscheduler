@@ -21,4 +21,9 @@ CREATE TABLE runrecord
 WITH OIDS;
 ALTER TABLE runrecord OWNER TO ads;
 
+GRANT SELECT, REFERENCES, TRIGGER ON TABLE runrecord TO "ADSViewer";
+GRANT ALL ON TABLE runrecord TO "ADSAdmin" WITH GRANT OPTION;
+GRANT SELECT, REFERENCES, TRIGGER ON TABLE runrecord TO "ADSOperator";
+
+
 create index RunRecord_JobID on RunRecord(JobID);
