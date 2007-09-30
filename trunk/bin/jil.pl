@@ -13,24 +13,9 @@ use Sys::Hostname;
 
 use lib ("$ENV{ADSROOT}/lib");
 
+use AdvancedScheduler qw(insert_job update_job delete_job);
 use AdvancedScheduler::Database;
 use AdvancedScheduler::JobDefinition;
-
-my $ads = AdvancedScheduler::Database->connect
-	or die ($DBI::errstr);
-
-my (@parms, %parms);
-@parms = qw( 
-		name
-		namespace
-		std_in_file 
-		std_err_file 
-		std_out_file
-		machine 
-		start_mins 
-		start_days 
-		command
-	     );
 
 my %callbacks = (
 	insert_job => \&insert_job,
@@ -88,67 +73,4 @@ sub ProcessCommand
 		warn ("Unknown command $$def{ADSCOMMAND}\n");
 		return 2;
 	}
-}
-
-sub insert_job
-{
-	my ($db, $jobdef) = @_;
-
-	$$jobdef{machine} = lc ($$jobdef{machine});
-
-	unless ($$jobdef{machine})
-	{
-		my $host = lc hostname();
-		print "Warning: No machine specified, so assuming '$host'\n";
-		$$jobdef{machine} = $host; # If no host given, assume current.
-	}
-	
-	my $sql = "insert into Job (" . join (", ", sort(@parms)) . ")\n"
-		.  "values (" . join(", ", map { "?" } sort @parms ) . ")\n";
-
-	my $sth = $db->prepare($sql);
-
-	my $rc = $sth->execute (map { $jobdef->$_ } sort @parms);
-
-	if ($rc)
-	{
-		$sth = $ads->prepare("select ScheduleNextRun(?)");
-		$rc = $sth->execute($jobdef->name);
-	}
-	
-	return $rc;
-}
-
-
-sub delete_job
-{
-	my ($db, $jobdef) = @_;
-
-	my $sql = "delete from Job where namespace = ? and name = ?";
-
-	my $sth = $db->prepare($sql);
-
-	return  $sth->execute ($$jobdef{namespace}, $$jobdef{name});
-}
-
-sub update_job
-{
-	my ($db, $jobdef) = @_;
-
-	# name and namespace are primary key fields, and cannot be changed
-	# via update_job. I'm thinking a new JIL command, move_namespace:
-	# or something can accomplish that. 
-	my @parms = sort grep(!/ADSCOMMAND/, grep (!/name/, grep(!/namespace/, keys %{$jobdef}))); 
-	my $sql = "update job set " . join(",\n\t", map { "$_ = ?" } @parms)
-		. "\nwhere namespace = ? and name = ?";
-
-	print $sql . "\n";
-
-	my $sth = $db->prepare($sql);
-
-	my @args = map{ $$jobdef{$_} }@parms;
-	push @args, ($$jobdef{namespace}, $$jobdef{name});
-
-	print "Query arguments are:\n" . join("\n", @args) . "\n";
-	return $sth->execute (@args);
 }
