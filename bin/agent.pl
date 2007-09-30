@@ -164,8 +164,8 @@ sub ExecWork
 {
     my $jobdef;
     
-    my $db = AdvancedScheduler::Database->connect
-        or die ("ExecWork was unable to connect to the database!");
+   # my $db = AdvancedScheduler::Database->connect
+    #    or die ("ExecWork was unable to connect to the database!");
         
     while ( ! $EXIT_FLAG )
     {
