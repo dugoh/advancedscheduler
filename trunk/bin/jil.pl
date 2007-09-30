@@ -58,13 +58,9 @@ sub ProcessCommand
 		print "Issuing " . $$def{ADSCOMMAND} . " call for "
 		      . join ("^", $$def{name}, $$def{namespace}) . "\n";
 			      
-		$ads->begin_work;
-		my $rc = $callbacks{$$def{ADSCOMMAND}}->($ads, $def);
+		my $rc = $callbacks{$$def{ADSCOMMAND}}->($def);
 		print "Database change ";
 		print $rc ? "SUCCEEDED!\n" : "FAILED!\n";
-		
-		if ($rc) { $ads->commit; }
-		else { $ads->rollback; }
 		
 		return ($rc ? 0 : 1);
 	}

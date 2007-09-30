@@ -1,5 +1,5 @@
 insert_job: run_sleep5
-command: sleep 5
+command: sleep 10
 start_mins: 0,5,10,15,20,25,30,35,40,45,50,55
 start_days: mo,tu,we,th,fr
 std_out_file: 

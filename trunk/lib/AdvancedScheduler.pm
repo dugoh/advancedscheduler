@@ -6,7 +6,7 @@ use Data::Dumper;
 
 @EXPORT_OK = qw( insert_job delete_job update_job );
 
-my (@parms, %parms);
+my (@parms);
 @parms = qw( 
 		name
 		namespace
@@ -22,10 +22,12 @@ my (@parms, %parms);
 sub insert_job
 {
 	
-	my $ads = AdvancedScheduler::Database->connect
+	my $db = AdvancedScheduler::Database->connect
 		or die ($DBI::errstr);
 
-	my ($db, $jobdef) = @_;
+	$db->begin_work;
+
+	my ($jobdef) = @_;
 
 	print Dumper($jobdef);
 
@@ -41,16 +43,19 @@ sub insert_job
 	my $sql = "insert into Job (" . join (", ", sort(@parms)) . ")\n"
 		.  "values (" . join(", ", map { "?" } sort @parms ) . ")\n";
 
-	print "Preparing sql:\n\n$sql\n\n";
+	#print "Preparing sql:\n\n$sql\n\n";
 	my $sth = $db->prepare($sql);
 
 	my $rc = $sth->execute (map { $jobdef->$_ } sort @parms);
 
 	if ($rc)
 	{
-		$sth = $ads->prepare("select ScheduleNextRun(?)");
+		$sth = $db->prepare("select ScheduleNextRun(?)");
 		$rc = $sth->execute($jobdef->name);
 	}
+	
+	if ($rc) { $db->commit; }
+	else { $db->rollback; }
 	
 	return $rc;
 }
@@ -58,21 +63,29 @@ sub insert_job
 
 sub delete_job
 {
-	my ($db, $jobdef) = @_;
+	my ($jobdef) = @_;
 	
 	my $ads = AdvancedScheduler::Database->connect
 		or die ($DBI::errstr);
-
+	
+	$ads->begin_work;
+	
 	my $sql = "delete from Job where namespace = ? and name = ?";
 
-	my $sth = $db->prepare($sql);
+	my $sth = $ads->prepare($sql);
 
-	return  $sth->execute ($$jobdef{namespace}, $$jobdef{name});
+	my $rc = $sth->execute ($$jobdef{namespace}, $$jobdef{name});
+	
+	if ($rc) { $ads->commit; }
+	else { $ads->rollback; }
+	
+	return $rc;
+	
 }
 
 sub update_job
 {
-	my ($db, $jobdef) = @_;
+	my ($jobdef) = @_;
 	my $ads = AdvancedScheduler::Database->connect
 		or die ($DBI::errstr);
 
@@ -85,11 +98,17 @@ sub update_job
 
 	print $sql . "\n";
 
-	my $sth = $db->prepare($sql);
+	my $sth = $ads->prepare($sql);
 
 	my @args = map{ $$jobdef{$_} }@parms;
 	push @args, ($$jobdef{namespace}, $$jobdef{name});
 
 	print "Query arguments are:\n" . join("\n", @args) . "\n";
-	return $sth->execute (@args);
+	my $rc = $sth->execute (@args);
+	
+	if ($rc) { $ads->commit; }
+	else { $ads->rollback; }
+	
+	return $rc;
+	
 }
