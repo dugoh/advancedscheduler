@@ -86,3 +86,7 @@ update-rc.d ads.sh defaults
 }}}
 
 ADS agent should now start when your machine starts.
+
+=== Red Hat ===
+
+I've never done this on Red Hat, but it should be similar. Create your symlink in /etc/init.d as in the Ubuntu directions. Instead of update-rc.d, though, I think there's a program called 'chkconfig' which will manage the rc.d directories. If you have Red Hat and this works for you, please update the Wiki to be a little more assertive. :-)
