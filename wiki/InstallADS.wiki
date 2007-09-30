@@ -63,7 +63,7 @@ You can then use the ads user to create the database:
 CREATE DATABASE
 }}}
 
-From this point on, it should be pretty smooth sailing. Simply adjust any settings in `etc/ads_setupenv.sh` that don't match your desired setup and run the install.sh script found in the base directory. 
+From this point on, it should be pretty smooth sailing. Simply adjust any settings in `$ADSROOT/etc/ads_setupenv.sh` that don't match your desired setup and run the install.sh script found in the base directory. 
 
 ADS is typically set up in its own directory, so it asks you if you'd like to create symbolic links in a more common bin directory, like /usr/bin. You don't need to, and probably shouldn't. It's better just to add the $ADSROOT/bin to your PATH. 
 
