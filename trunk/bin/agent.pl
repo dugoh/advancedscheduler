@@ -24,9 +24,12 @@ $| = 1;
 
 print "**** ADVANCED DISTRIBUTED SCHEDULER ****\n\n";
 
+my $maxExecutors = 5;
+
 my $agentid = join("-", hostname(), $PID, time);
 print "Starting AgentID $agentid\n";
-print "Start time is: " . scalar(localtime) . "\n\n";
+print "Start time is: " . scalar(localtime) . "\n";
+print "Max executors: $maxExecutors\n\n";
 
 use YAML qw(freeze thaw);
 
@@ -34,6 +37,8 @@ our $EXIT_FLAG : shared;
 our $JobQueue : shared;
 our $JobResults : shared;
 our $StatQueue : shared;
+
+our @Executors;
 
 $JobQueue = new Thread::Queue;
 $JobResults = new Thread::Queue;
@@ -52,15 +57,18 @@ sub HandleExit
 
 $SIG{TERM} = \&HandleExit;
 
-# Early implementation has this loop here, but eventually
-# this loop should be moved inside of each sub, and they
-# should run in different threads. I wasn't sure about
-# how SIGCHLD/fork/exec and system() interact with threads, so
-# I'm chickening out of that for the time being.
-
 my $manager = threads->create(\&WorkManager);    
-my $worker = threads->create(\&ExecWork);
+#my $worker = threads->create(\&ExecWork);
 my $statusmanager = threads->create(\&StatusManager);
+
+# Start Executors
+
+foreach (1..$maxExecutors)
+{
+    print "Starting Executor thread...\n";
+    push @Executors, threads->create(\&ExecWork);
+}
+
 
 while (1)
 {
@@ -71,8 +79,14 @@ while (1)
 print "MainLoop: Got EXIT_FLAG. Waiting for threads to exit.\n";
 
 $manager->join;
-$worker->join;
+#$worker->join;
 $statusmanager->join;
+
+foreach (@Executors)
+{
+    print "Waiting for Executor to exit..\n";
+    $_->join;
+}
 
 print "MainLoop: Threads exited. Quitting.\n";
 exit 0;
@@ -113,7 +127,7 @@ SQL
                 lock ($JobQueue);
                 my $jobid = $$jobdef{name};
                 
-                unless ($$jobdef{machine} == 'all')
+                unless ($$jobdef{machine} eq 'all')
                 {
                     my $sql = 'update runschedule set Assigned_Agent = ? where jobid = ?';
                     my $update = $db->prepare($sql);
