@@ -217,6 +217,12 @@ sub CreateCmd
     $cmd .= " >>$out ";
     $cmd .= $err ? " 2>>$err " : ' 2>&1 ';
     
+    # Handle owner
+    $cmd =  "sudo -u $$jobdef{owner} " . $cmd;
+    
+    # Handle chroot
+    $cmd = "chroot $$jobdef{chroot} " . $cmd;
+    
     return $cmd;
 }
 

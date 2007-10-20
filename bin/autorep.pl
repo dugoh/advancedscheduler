@@ -74,7 +74,10 @@ sub ShowJobDefs
                 start_times,
                 std_err_file,
                 std_in_file,
-                std_out_file
+                std_out_file,
+				owner,
+				chroot
+				
 	from Job
 	where name like ?
 	order by name -- will need to order by box,name when that's implemented

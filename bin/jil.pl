@@ -56,7 +56,7 @@ sub ProcessCommand
 	if ( $callbacks{$$def{ADSCOMMAND}} ) 
 	{
 		print "Issuing " . $$def{ADSCOMMAND} . " call for "
-		      . join ("^", $$def{name}, $$def{namespace}) . "\n";
+		      . join ("::", $$def{namespace}, $$def{name}) . "\n";
 			      
 		my $rc = $callbacks{$$def{ADSCOMMAND}}->($def);
 		print "Database change ";

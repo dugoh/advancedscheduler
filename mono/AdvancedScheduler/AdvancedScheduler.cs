@@ -69,8 +69,17 @@ namespace AdvancedScheduler
 		}
 		
 		public DataSet GetPendingJobs()
-		{
+		{	
+			string sql =  
+			      "select * " 
+			    + "from PendingJobs " 
+			    + "where (Machine = 'titan' or Machine = 'all') "
+			    + "and (assigned_agent is null "
+			    + "     or assigned_agent != 'dummy') ";
+						
+			NpgsqlDataAdapter adapter = new NpgsqlDataAdapter(sql, adsdb);
 			DataSet ds = new DataSet();
+			adapter.Fill(ds, "PendingJobs");
 			
 			return ds;
 		}
