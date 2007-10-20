@@ -28,6 +28,8 @@ CREATE TABLE job
   last_start_time timestamp with time zone,
   last_end_time timestamp with time zone,
   condition text,
+  owner varchar(40),
+  chroot text default '/',
 
   constraint JobPK primary key (namespace, name)
 ) 

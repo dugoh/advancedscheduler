@@ -4,6 +4,8 @@ use base qw(Exporter);
 use vars qw(@EXPORT_OK);
 use Data::Dumper;
 
+use Sys::Hostname qw(hostname);
+
 @EXPORT_OK = qw( insert_job delete_job update_job );
 
 my (@parms);
@@ -17,6 +19,8 @@ my (@parms);
 		start_mins 
 		start_days 
 		command
+		chroot
+		owner
 	     );
 
 sub insert_job
@@ -29,9 +33,12 @@ sub insert_job
 
 	my ($jobdef) = @_;
 
-	print Dumper($jobdef);
-
 	$$jobdef{machine} = lc ($$jobdef{machine});
+	$$jobdef{owner} ||= getpwuid($<);
+	$$jobdef{chroot} ||= "/";
+	$$jobdef{namespace} ||= getpwuid($<);
+
+	print "Current userid: " . getpwuid($<) . "\n";
 
 	unless ($$jobdef{machine})
 	{
@@ -40,10 +47,12 @@ sub insert_job
 		$$jobdef{machine} = $host; # If no host given, assume current.
 	}
 	
+	print Dumper($jobdef);
+	
 	my $sql = "insert into Job (" . join (", ", sort(@parms)) . ")\n"
 		.  "values (" . join(", ", map { "?" } sort @parms ) . ")\n";
 
-	#print "Preparing sql:\n\n$sql\n\n";
+	print "Preparing sql:\n\n$sql\n\n";
 	my $sth = $db->prepare($sql);
 
 	my $rc = $sth->execute (map { $jobdef->$_ } sort @parms);

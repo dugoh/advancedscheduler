@@ -44,6 +44,11 @@ namespace AdvancedScheduler
 			
 			DataSet pending = ads.GetPendingJobs();
 			
+			foreach ( DataRow job in pending.Tables[0].Rows )
+			{
+				Console.WriteLine("{0}", job.ToString());
+			}
+			
 			Console.WriteLine("WorkManager thread Exiting");
 		}
 		

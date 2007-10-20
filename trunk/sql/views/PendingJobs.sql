@@ -1,3 +1,4 @@
+--drop view PendingJobs
 create or replace view PendingJobs
 as 
 	
