@@ -52,6 +52,7 @@ sub ProcessCommand
 	# If namespace: is defined in JIL, use it. Otherwise,
 	# consult the environment.
 	$$def{namespace} ||= $ENV{ADSNAMESPACE};
+	$$def{namespace} ||= getpwuid($<);
 	
 	if ( $callbacks{$$def{ADSCOMMAND}} ) 
 	{
