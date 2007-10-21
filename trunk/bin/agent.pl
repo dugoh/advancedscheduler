@@ -19,6 +19,7 @@ use English;
 use Sys::Hostname;
 use Time::HiRes qw(usleep);
 use Data::Dumper;
+use String::ShellQuote;
 
 $| = 1;
 
@@ -218,7 +219,7 @@ sub CreateCmd
     $cmd .= $err ? " 2>>$err " : ' 2>&1 ';
     
     # Handle owner
-    $cmd =  "sudo -u $$jobdef{owner} bash -c '$cmd'";
+    $cmd =  "sudo -u $$jobdef{owner} bash -c " . shell_quote($cmd);
     
     # Handle chroot
     $cmd = "chroot $$jobdef{chroot} " . $cmd;
