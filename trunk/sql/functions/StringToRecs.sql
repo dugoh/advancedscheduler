@@ -39,4 +39,4 @@ begin
 	end if;
 end;
 
-$$ language plpgsql;
+$$ immutable returns null on null input language plpgsql;
