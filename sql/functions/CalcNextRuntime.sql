@@ -18,9 +18,8 @@ as $$
 
 declare
 	pJobID alias for $1;
-
+	counter int;
 	jobrec RECORD;
-
 	nextstart timestamp;
 
 begin
@@ -45,41 +44,27 @@ begin
 
 	*/
 
-	create temporary table UpcomingDays
-	as
-		select *
-		from DaysToDates( jobrec.start_days);
-
-
 
 	-- start_mins processing
 	
 	if (jobrec.start_mins is not null) 
 	then 
 
-		-- all start_mins for current date/current hour
-		insert into UpcomingTimes (name, starttime)
-		select jobrec.name, CURRENT_DATE + (date_part('hour', CURRENT_TIME) || ':' || lpad(mins, 2, '0'))::time
-		from StringToRecs(jobrec.start_mins, ',') as mins
+		-- calc times for today and every day in the coming week
+		for counter in 0..7 
+		loop
+			-- all start_mins for current hour
+			insert into UpcomingTimes (name, starttime)
+			-- all start_mins for next date/current hour
+			select jobrec.name, CURRENT_DATE + (date_part('hour', CURRENT_TIME) || ':' || lpad(mins, 2, '0'))::time + (counter::varchar || ' day')::interval
+			from StringToRecs(jobrec.start_mins, ',') as mins
+			
+			union all 
 
-		union all
-
-		-- all start_mins for next date/current hour
-		select jobrec.name, CURRENT_DATE + (date_part('hour', CURRENT_TIME) || ':' || lpad(mins, 2, '0'))::time + interval '1 day'
-		from StringToRecs(jobrec.start_mins, ',') as mins
-		
-		union all
-
-		-- all start_mins for current date/next hour
-		select jobrec.name, CURRENT_DATE + (((date_part('hour', CURRENT_TIME)::int + 1) % 24) || ':' || lpad(mins, 2, '0'))::time 
-		from StringToRecs(jobrec.start_mins, ',') as mins
-		
-		union all 
-
-		-- all start_mins for next date / next hour
-		select jobrec.name, CURRENT_DATE + (((date_part('hour', CURRENT_TIME)::int + 1) % 24) || ':' || lpad(mins, 2, '0'))::time + interval '1 day'
-		from StringToRecs(jobrec.start_mins, ',') as mins;
-
+			-- all start_mins for next hour
+			select jobrec.name, CURRENT_DATE + (((date_part('hour', CURRENT_TIME)::int + 1) % 24) || ':' || lpad(mins, 2, '0'))::time + (counter::varchar || ' day')::interval
+			from StringToRecs(jobrec.start_mins, ',') as mins;
+		end loop;
 
 	end if;
 
@@ -88,15 +73,14 @@ begin
 	if (jobrec.start_times is not null)
 	then
 
-		insert into UpcomingTimes(Name, StartTime)
-		select jobrec.name, CURRENT_DATE + times::time
-		from StringToRecs(jobrec.start_times, ',') times
-
-		union all
-
-		select jobrec.name, CURRENT_DATE + interval '1 day' + times::time
-		from StringToRecs(jobrec.start_times, ',') times;
-
+		-- start times for today and the following week
+		for counter in 0..7 
+		loop
+			insert into UpcomingTimes(Name, StartTime)
+			select jobrec.name, CURRENT_DATE + (counter::varchar || ' day')::interval + times::time
+			from StringToRecs(jobrec.start_times, ',') times;
+		end loop;
+		
 	end if;
 
 	select min(starttime)
