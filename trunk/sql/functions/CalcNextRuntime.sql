@@ -21,11 +21,6 @@ declare
 
 	jobrec RECORD;
 
-	curhr int;
-	timestr text;
-	counter int;
-	mins	text;
-
 	nextstart timestamp;
 
 begin
@@ -50,41 +45,41 @@ begin
 
 	*/
 
+	create temporary table UpcomingDays
+	as
+		select *
+		from DaysToDates( jobrec.start_days);
+
+
+
 	-- start_mins processing
 	
 	if (jobrec.start_mins is not null) 
 	then 
 
-		select date_part('hour', CURRENT_TIME)
-		into curhr;
+		-- all start_mins for current date/current hour
+		insert into UpcomingTimes (name, starttime)
+		select jobrec.name, CURRENT_DATE + (date_part('hour', CURRENT_TIME) || ':' || lpad(mins, 2, '0'))::time
+		from StringToRecs(jobrec.start_mins, ',') as mins
 
-		mins := split_part( jobrec.start_mins, ',', 1);
-		counter := 1;
+		union all
 
-		while ( length(mins) > 0  ) 
-		loop
+		-- all start_mins for next date/current hour
+		select jobrec.name, CURRENT_DATE + (date_part('hour', CURRENT_TIME) || ':' || lpad(mins, 2, '0'))::time + interval '1 day'
+		from StringToRecs(jobrec.start_mins, ',') as mins
+		
+		union all
 
-			select lpad(mins, 2, '0' ), curhr::text || ':' || mins::text
-			into mins, timestr;
+		-- all start_mins for current date/next hour
+		select jobrec.name, CURRENT_DATE + (((date_part('hour', CURRENT_TIME)::int + 1) % 24) || ':' || lpad(mins, 2, '0'))::time 
+		from StringToRecs(jobrec.start_mins, ',') as mins
+		
+		union all 
 
-			insert into UpcomingTimes (name, starttime)
-			select jobrec.name, CURRENT_DATE + timestr::time;
+		-- all start_mins for next date / next hour
+		select jobrec.name, CURRENT_DATE + (((date_part('hour', CURRENT_TIME)::int + 1) % 24) || ':' || lpad(mins, 2, '0'))::time + interval '1 day'
+		from StringToRecs(jobrec.start_mins, ',') as mins;
 
-			insert into UpcomingTimes (name, starttime)
-			select jobrec.name, CURRENT_DATE + interval '1 day' + timestr::time;
-
-			timestr := ((curhr + 1) % 24)::text || ':' || mins;
-
-			insert into UpcomingTimes (name, starttime)
-			select jobrec.name, CURRENT_DATE + timestr::time;
-
-			insert into UpcomingTimes (name, starttime)
-			select jobrec.name, CURRENT_DATE + '1 day'::interval + timestr::time;
-
-			counter := counter + 1;
-			mins := split_part( jobrec.start_mins, ',', counter);
-
-		end loop;
 
 	end if;
 
@@ -93,23 +88,14 @@ begin
 	if (jobrec.start_times is not null)
 	then
 
-		timestr := split_part( jobrec.start_times, ',', 1);
-		counter := 1;
+		insert into UpcomingTimes(Name, StartTime)
+		select jobrec.name, CURRENT_DATE + times::time
+		from StringToRecs(jobrec.start_times, ',') times
 
-		while ( length(timestr) > 0 ) 
-		loop
+		union all
 
-			insert into UpcomingTimes (name,starttime)
-			select jobrec.name, CURRENT_DATE + timestr::time;
-
-			insert into UpcomingTimes (name, starttime)
-			select jobrec.name, CURRENT_DATE + interval '1 day' + timestr::time;
-
-			counter := counter + 1;
-			timestr := split_part( jobrec.start_times, ',', counter);
-
-
-		end loop;
+		select jobrec.name, CURRENT_DATE + interval '1 day' + times::time
+		from StringToRecs(jobrec.start_times, ',') times;
 
 	end if;
 
