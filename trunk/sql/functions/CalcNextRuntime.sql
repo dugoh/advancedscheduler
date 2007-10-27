@@ -1,7 +1,7 @@
 --
 /*
 drop table Times;
-select CalcNextRuntime( 23 )
+select CalcNextRuntime( 20 )
 select * from UpcomingTimes
 select * from job
 */
@@ -21,6 +21,7 @@ declare
 	counter int;
 	jobrec RECORD;
 	nextstart timestamp;
+	hour int;
 
 begin
 
@@ -49,21 +50,17 @@ begin
 	
 	if (jobrec.start_mins is not null) 
 	then 
-
 		-- calc times for today and every day in the coming week
 		for counter in 0..7 
 		loop
-			-- all start_mins for current hour
-			insert into UpcomingTimes (name, starttime)
-			-- all start_mins for next date/current hour
-			select jobrec.name, CURRENT_DATE + (date_part('hour', CURRENT_TIME) || ':' || lpad(mins, 2, '0'))::time + (counter::varchar || ' day')::interval
-			from StringToRecs(jobrec.start_mins, ',') as mins
-			
-			union all 
-
-			-- all start_mins for next hour
-			select jobrec.name, CURRENT_DATE + (((date_part('hour', CURRENT_TIME)::int + 1) % 24) || ':' || lpad(mins, 2, '0'))::time + (counter::varchar || ' day')::interval
-			from StringToRecs(jobrec.start_mins, ',') as mins;
+			for hour in 0..23
+			loop
+				-- all start_mins for current hour
+				insert into UpcomingTimes (name, starttime)
+				-- all start_mins for next date/current hour
+				select jobrec.name, CURRENT_DATE + (hour::varchar || ':' || lpad(mins, 2, '0'))::time + (counter::varchar || ' day')::interval
+				from StringToRecs(jobrec.start_mins, ',') as mins;
+			end loop;
 		end loop;
 
 	end if;
@@ -81,6 +78,20 @@ begin
 			from StringToRecs(jobrec.start_times, ',') times;
 		end loop;
 		
+	end if;
+
+	if ( jobrec.start_days is not null )
+	then
+		delete 
+		from UpcomingTimes 
+		where Name = jobrec.Name
+		  and extract(dow from StartTime) not in (
+			select maps.value
+			from StringToRecs(jobrec.start_days) dow
+				inner join maps
+					on maps.key = lower(dow)
+			where maps.MapName = 'DaysOfWeek'
+		  );
 	end if;
 
 	select min(starttime)
