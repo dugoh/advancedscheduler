@@ -1,7 +1,8 @@
 #!/usr/bin/make
 
 OBJ=	CalcNextRuntime.sql \
-	ScheduleNextRun.sql
+	ScheduleNextRun.sql \
+	StringToRecs.sql
 
 
 .PHONY: $(OBJ)
@@ -9,6 +10,8 @@ OBJ=	CalcNextRuntime.sql \
 all: $(OBJ)
 
 ScheduleNextRun.sql: CalcNextRuntime.sql 
+
+CalcNextRuntime.sql: StringToRecs.sql
 
 $(OBJ):
 	${ADSROOT}/bin/adsql.sh < $@
