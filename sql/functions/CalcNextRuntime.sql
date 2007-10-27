@@ -1,15 +1,11 @@
---
 /*
-drop table Times;
-select CalcNextRuntime( 20 )
-select * from UpcomingTimes
-select * from job
-*/
--- select * from Times
--- 
--- drop function CalcNextRuntime(int)
--- echo ('meh')
 
+# Copyright 2007 David Spadea
+# All rights reserved.
+#
+# This code is release for use under the terms of the GNU General Public License, version 3.
+
+*/
 
 
 create or replace function CalcNextRuntime( int)
