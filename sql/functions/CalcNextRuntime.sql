@@ -7,6 +7,11 @@
 
 */
 
+/*
+select CalcNextRuntime(20)
+select * from UpcomingTimes
+delete from UpcomingTimes
+*/
 
 create or replace function CalcNextRuntime( int)
 returns timestamp
@@ -14,10 +19,8 @@ as $$
 
 declare
 	pJobID alias for $1;
-	counter int;
 	jobrec RECORD;
 	nextstart timestamp;
-	hour int;
 
 begin
 
@@ -46,19 +49,14 @@ begin
 	
 	if (jobrec.start_mins is not null) 
 	then 
-		-- calc times for today and every day in the coming week
-		for counter in 0..7 
-		loop
-			for hour in 0..23
-			loop
-				-- all start_mins for current hour
-				insert into UpcomingTimes (name, starttime)
-				-- all start_mins for next date/current hour
-				select jobrec.name, CURRENT_DATE + (hour::varchar || ':' || lpad(mins, 2, '0'))::time + (counter::varchar || ' day')::interval
-				from StringToRecs(jobrec.start_mins, ',') as mins;
-			end loop;
-		end loop;
-
+		-- all start_mins for current hour
+		insert into UpcomingTimes (name, starttime)
+		-- all start_mins for next date/current hour
+		select jobrec.name, CURRENT_DATE + (hour::varchar || ':' || lpad(mins, 2, '0'))::time + (days::varchar || ' day')::interval
+		from StringToRecs(jobrec.start_mins, ',') as mins,
+		     sequence(0,23) as hour,
+		     sequence(0,7) as days;
+		
 	end if;
 
 	-- start_times
@@ -67,12 +65,10 @@ begin
 	then
 
 		-- start times for today and the following week
-		for counter in 0..7 
-		loop
-			insert into UpcomingTimes(Name, StartTime)
-			select jobrec.name, CURRENT_DATE + (counter::varchar || ' day')::interval + times::time
-			from StringToRecs(jobrec.start_times, ',') times;
-		end loop;
+		insert into UpcomingTimes(Name, StartTime)
+		select jobrec.name, CURRENT_DATE + (days::varchar || ' day')::interval + times::time
+		from StringToRecs(jobrec.start_times, ',') times,
+		     sequence(0,7) days;
 		
 	end if;
 

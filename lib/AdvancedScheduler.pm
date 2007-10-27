@@ -1,3 +1,8 @@
+# Copyright 2007 David Spadea
+# All rights reserved.
+#
+# This code is release for use under the terms of the GNU General Public License, version 3.
+
 package AdvancedScheduler;
 
 use base qw(Exporter);
