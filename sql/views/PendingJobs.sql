@@ -16,7 +16,8 @@ as
 		inner join Job 
 			on sched.JobID = job.JobID
 	where sched.next_run <= now()
-	  and job.status not in ('OI', 'OH');
+	  and job.status not in ('OI', 'OH')
+	  and StartConditionsMet(job.condition) = true;
 
 /*
 
