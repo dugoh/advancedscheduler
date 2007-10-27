@@ -19,15 +19,12 @@ begin
 	if (instring is not null)
 	then
 
-		--raise info 'Delimiter is \'%\'', delim; 
-
 		curfield := split_part( instring, delim, 1);
 		counter := 1;
 
 		while ( length(curfield) > 0 ) 
 		loop
 
-		--	raise info 'Found field string: %', curfield;
 			return next curfield;
 		
 			counter := counter + 1;
