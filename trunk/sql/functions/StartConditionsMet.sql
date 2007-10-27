@@ -45,7 +45,8 @@ begin
 				on maps.key = c.condition
 			inner join job
 				on c.job = job.name
-		where job.status = maps.value;
+		where job.status = maps.value
+		  and maps.value = 'Conditions';
 
 		if truecond is null
 		then
