@@ -1,3 +1,11 @@
+/*
+
+Author: David Spadea
+Date: October 2007
+License: GNU GPL V3
+
+*/
+
 create or replace function ScheduleNextRun ( text )
 returns timestamp
 as $$
