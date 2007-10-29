@@ -26,6 +26,7 @@ my (@parms);
 		command
 		chroot
 		owner
+		condition
 	     );
 
 sub insert_job
