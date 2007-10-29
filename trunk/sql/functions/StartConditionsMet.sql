@@ -7,7 +7,7 @@
 
 */
 
---select * from StartConditionsMet('success(run_true) and su(run_whoami)')
+--select StartConditionsMet('success(sleep)')
 
 create or replace function StartConditionsMet( text )
 returns bool
@@ -46,7 +46,7 @@ begin
 			inner join job
 				on c.job = job.name
 		where job.status = maps.value
-		  and maps.value = 'Conditions';
+		  and maps.mapname = 'Conditions';
 
 		if truecond is null
 		then

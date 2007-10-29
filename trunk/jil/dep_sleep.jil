@@ -1,0 +1,8 @@
+insert_job: dep_sleep
+command: true
+start_mins: 1,6,11,16,21,26,31,36,41,46,51,56
+start_days: mo,tu,we,th,fr,sa,su
+condition: success(sleep)
+std_out_file:
+std_err_file:
+std_in_file:
