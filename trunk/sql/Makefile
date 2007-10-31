@@ -1,5 +1,6 @@
 #!/usr/bin/make
 
+SETUP= plperl.sql plpgsql.sql
 ROLES=ADSAdmin.sql ADSViewer.sql ADSOperator.sql
 TRIGGERS=SetUpNextRun.sql
 TABLES= jobs.sql \
@@ -10,7 +11,8 @@ TABLES= jobs.sql \
 FUNCTIONS=	CalcNextRuntime.sql \
 		ScheduleNextRun.sql \
 		StringToRecs.sql \
-		sequence.sql
+		sequence.sql \
+		StartConditionsMet.sql
 VIEWS=PendingJobs.sql
 
 OBJ=$(ROLES) $(TRIGGERS) $(TABLES) $(FUNCTIONS) $(VIEWS)
@@ -19,20 +21,25 @@ OBJ=$(ROLES) $(TRIGGERS) $(TABLES) $(FUNCTIONS) $(VIEWS)
 
 all: $(OBJ)
 
+$(OBJ): $(SETUP)
+
+$(SETUP): 
+	${ADSROOT}/bin/adsql.sh < setup/$@ || exit 1
+
 $(ROLES):
-	${ADSROOT}/bin/adsql.sh < roles/$@
+	${ADSROOT}/bin/adsql.sh < roles/$@ || exit 1
 
-$(TRIGGERS):
-	${ADSROOT}/bin/adsql.sh < triggers/$@
+$(TRIGGERS): $(TABLES)
+	${ADSROOT}/bin/adsql.sh < triggers/$@ || exit 1
 
-$(TABLES):
-	${ADSROOT}/bin/adsql.sh < tables/$@
+$(TABLES): $(ROLES)
+	${ADSROOT}/bin/adsql.sh < tables/$@ || exit 1
 
-$(FUNCTIONS):
-	${ADSROOT}/bin/adsql.sh < functions/$@
+$(FUNCTIONS): $(TABLES)
+	${ADSROOT}/bin/adsql.sh < functions/$@ || exit 1
 
-$(VIEWS):
-	${ADSROOT}/bin/adsql.sh < views/$@
+$(VIEWS): $(TABLES)
+	${ADSROOT}/bin/adsql.sh < views/$@ || exit 1
 
 
 ADSOperator.sql: ADSViewer.sql
@@ -49,4 +56,4 @@ ScheduleNextRun.sql: CalcNextRuntime.sql
 
 CalcNextRuntime.sql: StringToRecs.sql sequence.sql
 
-
+PendingJobs.sql: StartConditionsMet.sql
