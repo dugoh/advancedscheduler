@@ -1,20 +1,52 @@
-TYPES=functions \
-	tables \
-	triggers \
-	views \
-	roles
+#!/usr/bin/make
 
-.PHONY: $(TYPES)
+ROLES=ADSAdmin.sql ADSViewer.sql ADSOperator.sql
+TRIGGERS=SetUpNextRun.sql
+TABLES= jobs.sql \
+	runrecord.sql \
+	machine.sql \
+	runschedule.sql \
+	UpcomingTimes.sql 
+FUNCTIONS=	CalcNextRuntime.sql \
+		ScheduleNextRun.sql \
+		StringToRecs.sql \
+		sequence.sql
+VIEWS=PendingJobs.sql
 
-all: $(TYPES)
+OBJ=$(ROLES) $(TRIGGERS) $(TABLES) $(FUNCTIONS) $(VIEWS)
 
-tables: roles
+.PHONY: $(OBJ)
 
-views: tables
+all: $(OBJ)
 
-triggers: tables
+$(ROLES):
+	${ADSROOT}/bin/adsql.sh < roles/$@
 
-functions: tables views
+$(TRIGGERS):
+	${ADSROOT}/bin/adsql.sh < triggers/$@
 
-$(TYPES):
-	cd $@ && make 
+$(TABLES):
+	${ADSROOT}/bin/adsql.sh < tables/$@
+
+$(FUNCTIONS):
+	${ADSROOT}/bin/adsql.sh < functions/$@
+
+$(VIEWS):
+	${ADSROOT}/bin/adsql.sh < views/$@
+
+
+ADSOperator.sql: ADSViewer.sql
+
+ADSAdmin.sql: ADSOperator.sql
+
+runrecord.sql: jobs.sql
+
+jobs.sql: machine.sql
+
+runschedule.sql: jobs.sql
+
+ScheduleNextRun.sql: CalcNextRuntime.sql 
+
+CalcNextRuntime.sql: StringToRecs.sql sequence.sql
+
+
