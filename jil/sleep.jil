@@ -1,4 +1,4 @@
-update_job: sleep
+insert_job: sleep
 command: sleep 180
 start_mins: 0,5,10,15,20,25,30,35,40,45,50,55
 start_days: mo,tu,we,th,fr,sa,su

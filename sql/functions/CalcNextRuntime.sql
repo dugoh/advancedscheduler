@@ -79,7 +79,7 @@ begin
 		where Name = jobrec.Name
 		  and extract(dow from StartTime) not in (
 			select maps.value
-			from StringToRecs(jobrec.start_days) dow
+			from StringToRecs(jobrec.start_days, ',') dow
 				inner join maps
 					on maps.key = lower(dow)
 			where maps.MapName = 'DaysOfWeek'

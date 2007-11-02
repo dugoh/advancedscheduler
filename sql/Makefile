@@ -7,7 +7,8 @@ TABLES= jobs.sql \
 	runrecord.sql \
 	machine.sql \
 	runschedule.sql \
-	UpcomingTimes.sql 
+	UpcomingTimes.sql \
+	maps.sql
 FUNCTIONS=	CalcNextRuntime.sql \
 		ScheduleNextRun.sql \
 		StringToRecs.sql \
@@ -24,21 +25,27 @@ all: $(OBJ)
 $(OBJ): $(SETUP)
 
 $(SETUP): 
+	echo Setup: $@
 	${ADSROOT}/bin/adsql.sh < setup/$@ || exit 1
 
 $(ROLES):
+	echo Role: $@
 	${ADSROOT}/bin/adsql.sh < roles/$@ || exit 1
 
 $(TRIGGERS): $(TABLES)
+	echo Trigger: $@
 	${ADSROOT}/bin/adsql.sh < triggers/$@ || exit 1
 
 $(TABLES): $(ROLES)
+	echo Table: $@
 	${ADSROOT}/bin/adsql.sh < tables/$@ || exit 1
 
 $(FUNCTIONS): $(TABLES)
+	echo Function: $@
 	${ADSROOT}/bin/adsql.sh < functions/$@ || exit 1
 
 $(VIEWS): $(TABLES)
+	echo View: $@
 	${ADSROOT}/bin/adsql.sh < views/$@ || exit 1
 
 
