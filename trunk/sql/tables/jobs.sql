@@ -14,7 +14,9 @@
 CREATE TABLE job
 (
   namespace varchar(30),
+  box_name text,
   name text unique,
+  job_type char(10) not null default 'c',
   machine varchar(255) references Machine(name) on update cascade,
   jobid serial unique,
   status varchar(10) not null default 'IN',
@@ -30,6 +32,7 @@ CREATE TABLE job
   condition text,
   owner varchar(40),
   chroot text default '/',
+  run_window varchar(25),
 
   constraint JobPK primary key (namespace, name)
 ) 
