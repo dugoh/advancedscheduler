@@ -21,6 +21,7 @@ declare
 	pJobID alias for $1;
 	jobrec RECORD;
 	nextstart timestamp;
+	run_window record;
 
 begin
 
@@ -84,6 +85,20 @@ begin
 					on maps.key = lower(dow)
 			where maps.MapName = 'DaysOfWeek'
 		  );
+	end if;
+
+	if ( jobrec.run_window is not null )
+	then
+		select *
+		into run_window
+		from ParseRunWindow(jobrec.run_window);
+		
+		delete 
+		from UpcomingTimes
+		where Name = jobrec.Name
+		  and starttime not between (StartTime::date + run_window.start_time) 
+				        and (StartTime::date + run_window.end_time);
+		
 	end if;
 
 	select min(starttime)
