@@ -13,7 +13,8 @@ FUNCTIONS=	CalcNextRuntime.sql \
 		ScheduleNextRun.sql \
 		StringToRecs.sql \
 		sequence.sql \
-		StartConditionsMet.sql
+		StartConditionsMet.sql \
+		ParseCondition.sql
 VIEWS=PendingJobs.sql
 
 OBJ=$(ROLES) $(TRIGGERS) $(TABLES) $(FUNCTIONS) $(VIEWS)
@@ -32,7 +33,7 @@ $(ROLES):
 	echo Role: $@
 	${ADSROOT}/bin/adsql.sh < roles/$@ || exit 1
 
-$(TRIGGERS): $(TABLES)
+$(TRIGGERS): $(TABLES) 
 	echo Trigger: $@
 	${ADSROOT}/bin/adsql.sh < triggers/$@ || exit 1
 

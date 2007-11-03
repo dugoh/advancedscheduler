@@ -1,7 +1,7 @@
 insert_job: cat_stdin
 command: cat
 date_conditions: 1
-start_mins: 0,5,10,15,20,25,30,35,40,45,50,55
+start_mins: 42
 start_days: mo,tu,we,th,fr
-conditions: notrunning(nrjob) and success(succjob) and s(sjob)
+run_window: 12:00 - 22:00
 std_in_file: /home/dspadea/dev/advancedscheduler/jil/cat_stdin.jil
