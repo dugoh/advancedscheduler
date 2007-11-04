@@ -93,6 +93,9 @@ begin
 		into run_window
 		from ParseRunWindow(jobrec.run_window);
 		
+                raise notice 'Run window: % through %',
+                    run_window.start_time, run_window.end_time;
+                
 		delete 
 		from UpcomingTimes
 		where Name = jobrec.Name
@@ -100,7 +103,7 @@ begin
 				        and (StartTime::date + run_window.end_time);
 		
 	end if;
-
+	
 	select min(starttime)
 	into nextstart
 	from UpcomingTimes

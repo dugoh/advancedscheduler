@@ -51,10 +51,10 @@ begin
 		if truecond is null
 		then
 			condsmet := false;
-			raise notice '% is not true. Not checking any more.', condition;
+			--raise notice '% is not true. Not checking any more.', condition;
 			exit;
-		else
-			raise notice '% is true', condition;
+		--else
+			--raise notice '% is true', condition;
 		end if;
 
 	end loop;
