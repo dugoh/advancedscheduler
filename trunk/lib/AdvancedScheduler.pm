@@ -27,6 +27,7 @@ my (@parms);
 		chroot
 		owner
 		condition
+		run_window
 	     );
 
 sub insert_job
