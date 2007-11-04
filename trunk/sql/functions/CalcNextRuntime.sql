@@ -98,11 +98,23 @@ begin
                 --raise notice 'Run window: % through %',
                 --run_window.start_time, run_window.end_time;
                 
+                /* If end_time <= start_time, assume that the next day is intended.
+                   For example, 19:00 - 7:00 would denote an overnight job
+                   that should not run after 7am or before 19:00.
+                */
+                
 		delete 
 		from UpcomingTimes
 		where Name = jobrec.Name
-		  and starttime not between (StartTime::date + run_window.start_time) 
-				        and (StartTime::date + run_window.end_time);
+		  and starttime not between (StartTime::date + run_window.start_time)
+				        and (case
+                                                when run_window.end_time > run_window.start_time
+                                                    then StartTime::date + run_window.end_time
+                                                when run_window.end_time <= run_window.start_time
+                                                    then StartTime::date  + interval '1 day' + run_window.end_time
+                                             end
+                                            );
+                                                    
 		
 	end if;
 	
