@@ -93,8 +93,8 @@ begin
 		into run_window
 		from ParseRunWindow(jobrec.run_window);
 		
-                raise notice 'Run window: % through %',
-                    run_window.start_time, run_window.end_time;
+                --raise notice 'Run window: % through %',
+                --run_window.start_time, run_window.end_time;
                 
 		delete 
 		from UpcomingTimes
@@ -110,7 +110,7 @@ begin
 	where starttime >= now()
 	  and name = jobrec.name;
 
-	raise notice 'Next scheduled start for % is %', jobrec.name, nextstart; 
+	--raise notice 'Next scheduled start for % is %', jobrec.name, nextstart; 
 
 	return nextstart;
 
