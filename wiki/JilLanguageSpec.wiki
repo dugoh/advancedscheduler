@@ -42,10 +42,11 @@ As for insert_job and update_job, the following attributes may be supplied in th
   * condition: rules that determine when a job should run based on the state of other jobs, e.g. "failure(JOB1) and (success(JOB2) or success(JOB3)) and notrunning(JOB4)"
   * alarm_if_fail: boolean (0/1) value determining whether an alarm should be sent upon a job failure event.
   * date_conditions: 0/1 -- determines whether time/day constraints will be taken into consideration when determining when to kick off jobs. If 0, start_times, start_mins, and start_days will be ignored, and job control will be based on the condition field only. 
-  * std_in_file: file that will be redirected into the command as STDIN. Specify full path. Autosys does not provide this utility, but it should be trivial to add.
+  * std_in_file: file that will be redirected into the command as STDIN. Specify full path. Autosys does not provide this utility, but it should be trivial to add. (ADS Extension)
   * std_out_file: file that will receive the job's STDOUT. Specify full path.
   * std_err_file: file that will receive the job's STDERR. Specify full path.
   * profile: file that will be sourced by the shell prior to kicking off the job. 
+  * run_window: A range of hours, such as "7:00 - 10:00", which restricts the possible start times of the job. If you specify "start_mins: 15,30", then the job will run on 7:15, 7:30, 8:15 ... 10:30, and will then wait until the next available 7:15 (taking day restrictions into account). 
 
 TO DO: Add File Watcher and Box Job information
 
