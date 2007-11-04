@@ -8,7 +8,7 @@
 */
 
 /*
-select CalcNextRuntime(20)
+select CalcNextRuntime(5)
 select * from UpcomingTimes
 delete from UpcomingTimes
 */
@@ -33,7 +33,9 @@ begin
 	from Job
 	where JobID = pJobID;
 
+        -- Clean up any old recs, if any.
 	delete from UpcomingTimes where name = jobrec.name;
+        
 	/* 
 
 	For the time being, we simply figure out all possible start times for the current and next hour, and
@@ -111,8 +113,11 @@ begin
 	  and name = jobrec.name;
 
 	--raise notice 'Next scheduled start for % is %', jobrec.name, nextstart; 
-
-	return nextstart;
+        
+        -- Clean up the UpcomingTimes table. 
+        delete from UpcomingTimes where name = jobrec.name;
+	
+        return nextstart;
 
 end;
 
