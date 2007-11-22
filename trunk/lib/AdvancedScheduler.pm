@@ -59,10 +59,18 @@ sub insert_job
 	my $sql = "insert into Job (" . join (", ", sort(@parms)) . ")\n"
 		.  "values (" . join(", ", map { "?" } sort @parms ) . ")\n";
 
-	print "Preparing sql:\n\n$sql\n\n";
+	#print "Preparing sql:\n\n$sql\n\n";
 	my $sth = $db->prepare($sql);
 
 	my $rc = $sth->execute (map { $jobdef->$_ } sort @parms);
+
+	return undef unless ($rc);
+
+	$sql = "select SetJobStatus(?, 'IN')";
+
+	$sth = $db->prepare($sql);
+
+	$rc = $sth->execute ($jobdef->name);
 
 	if ($rc)
 	{
