@@ -98,7 +98,7 @@ Reads pending events from the database and adds them to the work queue.
 
 This does not exit until the $EXIT_FLAG is set by a SIGTERM.
 
-=cut
+=cut 
 
 sub WorkManager
 {
