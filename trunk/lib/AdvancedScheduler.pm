@@ -54,7 +54,7 @@ sub insert_job
 		$$jobdef{machine} = $host; # If no host given, assume current.
 	}
 	
-	print Dumper($jobdef);
+	#print Dumper($jobdef);
 	
 	my $sql = "insert into Job (" . join (", ", sort(@parms)) . ")\n"
 		.  "values (" . join(", ", map { "?" } sort @parms ) . ")\n";

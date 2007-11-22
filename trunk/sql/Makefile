@@ -2,7 +2,7 @@
 
 SETUP= plperl.sql plpgsql.sql
 ROLES=ADSAdmin.sql ADSViewer.sql ADSOperator.sql
-TRIGGERS=SetUpNextRun.sql
+TRIGGERS=
 TABLES= jobs.sql \
 	runrecord.sql \
 	machine.sql \
@@ -14,7 +14,8 @@ FUNCTIONS=	CalcNextRuntime.sql \
 		StringToRecs.sql \
 		sequence.sql \
 		StartConditionsMet.sql \
-		ParseCondition.sql
+		ParseCondition.sql \
+		SetJobStatus.sql
 VIEWS=PendingJobs.sql
 
 OBJ=$(ROLES) $(TRIGGERS) $(TABLES) $(FUNCTIONS) $(VIEWS)
@@ -65,3 +66,5 @@ ScheduleNextRun.sql: CalcNextRuntime.sql
 CalcNextRuntime.sql: StringToRecs.sql sequence.sql
 
 PendingJobs.sql: StartConditionsMet.sql
+
+SetJobStatus.sql: jobs.sql runrecord.sql

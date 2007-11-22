@@ -19,7 +19,6 @@ CREATE TABLE job
   job_type char(10) not null default 'c',
   machine varchar(255) references Machine(name) on update cascade,
   jobid serial unique,
-  status varchar(10) not null default 'IN',
   std_in_file text,
   std_err_file text,
   command text,
@@ -27,8 +26,6 @@ CREATE TABLE job
   start_mins text,
   start_times text,
   std_out_file text,
-  last_start_time timestamp with time zone,
-  last_end_time timestamp with time zone,
   condition text,
   owner varchar(40),
   chroot text default '/',
@@ -38,7 +35,6 @@ CREATE TABLE job
 ) 
 WITH OIDS;
 ALTER TABLE job OWNER TO ads;
-
 
 GRANT ALL ON TABLE job TO ads;
 GRANT ALL ON TABLE job TO "ADSOperator";

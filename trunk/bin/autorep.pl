@@ -75,9 +75,9 @@ sub ShowJobDefs
                 std_err_file,
                 std_in_file,
                 std_out_file,
-				owner,
-				chroot,
-				run_window
+		  owner,
+		  chroot,
+		  run_window
 				
 	from Job
 	where name like ?
@@ -117,12 +117,15 @@ sub ShowRunRecords
 
 	my $sql =<<SQL;
 
-	select name,
-	       last_start_time,
-	       last_end_time,
-	       status
+	select Name,
+	       StartTime,
+	       EndTime,
+	       Status
 	from job
+		left join RunRecord rec
+			on job.JobID = rec.JobID
 	where name like ?
+	  and (rec.JobID is null or rec.Current = true)
 	order by name
 
 SQL
@@ -138,7 +141,7 @@ SQL
 	{
 		{
 			no warnings;
-			print sprintf($fmt, $$rec{name}, $$rec{status}, $$rec{last_start_time}, $$rec{last_end_time});
+			print sprintf($fmt, $$rec{name}, $$rec{status}, $$rec{starttime}, $$rec{endtime});
 		}
 	}
 

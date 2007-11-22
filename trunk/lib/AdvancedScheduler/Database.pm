@@ -19,9 +19,7 @@ sub SetJobStatus
             
     my $sql =<<SQL;
    
-        update Job
-        set Status = ? 
-        where Name = ?
+        select SetJobStatus(?, ?)
         
 SQL
 
@@ -29,11 +27,10 @@ SQL
     
     print sprintf ("Setting status %s for job %s\n", $status, $jobname);
         
-    $sth->execute($status, $jobname )
+    $sth->execute( $jobname, $status )
         or die ("SetJobStatus execute failed!");
     
     $sth->finish;
-    
 }
 
 
