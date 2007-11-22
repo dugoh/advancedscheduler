@@ -60,9 +60,7 @@ sub forcestartjob
 
     my $sql =<<SQL;
 
-    Update Job
-    set status = 'AC'
-    where job.name = ?;
+    select SetJobStatus(?, 'AC') 
     
 SQL
 

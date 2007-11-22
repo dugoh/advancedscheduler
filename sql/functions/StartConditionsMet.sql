@@ -7,7 +7,7 @@
 
 */
 
---select StartConditionsMet('success(sleep)')
+--select StartConditionsMet('s(sleep)')
 
 create or replace function StartConditionsMet( text )
 returns bool
@@ -45,7 +45,10 @@ begin
 				on maps.key = c.condition
 			inner join job
 				on c.job = job.name
-		where job.status = maps.value
+			inner join RunRecord rec
+				on job.JobID = rec.JobID
+		where rec.status = maps.value
+		  and rec.Current = true
 		  and maps.mapname = 'Conditions';
 
 		if truecond is null

@@ -114,8 +114,8 @@ begin
                                                     then StartTime::date  + interval '1 day' + run_window.end_time
                                              end
                                             );
-                                                    
-		
+
+
 	end if;
 	
 	select min(starttime)
