@@ -2,7 +2,7 @@
 
 . etc/ads_setupenv.sh
 
-echo <<SYMLNKPATH
+cat <<SYMLNKPATH
 
 This installer can create symbolic links in another directory for you, if you are
 unable to modify your PATH environment variable. 
@@ -24,7 +24,7 @@ if [ ! -z "$sympath" ] ; then
 	done
 fi
 
-echo <<DBINSTALL
+cat <<DBINSTALL
 
 This installer can create the database objects for you. They will be created as follows:
 
