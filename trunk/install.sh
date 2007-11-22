@@ -7,7 +7,7 @@ cat <<SYMLNKPATH
 This installer can create symbolic links in another directory for you, if you are
 unable to modify your PATH environment variable. 
 
-Note that the best approach is to simply include $ADSROOT in your \$PATH variable.
+Note that the best approach is to simply include $ADSROOT/bin in your \$PATH variable.
 
 If you'd like to create symbolic links, please enter a destination path below. Leave it
 blank if you'll set up your PATH instead.
@@ -15,7 +15,7 @@ blank if you'll set up your PATH instead.
 Symlink Path:
 SYMLNKPATH
 
-read $sympath
+read sympath
 
 if [ ! -z "$sympath" ] ; then
 	for prog in $ADSROOT/bin/*
@@ -35,13 +35,14 @@ UserID   : $ADSUSER
 If you are simply installing the client and will be using an existing ADS database, 
 you should say N here.
 
-Install database objects? (Y/N)
+Install database objects? (y/n)
 DBINSTALL
 
-read $instdb
+read instdb
 
-if [ "$instdb" = "Y" ] || [ "$instdb" = "y" ] ; then
-	cd sql && make
+if [ "$instdb" = "y" ] ; then
+	echo Setting up database objects...
+	cd $ADSROOT/sql && make
 fi
 
 echo Installation is complete! 
