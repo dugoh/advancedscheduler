@@ -51,12 +51,23 @@ use AdvancedScheduler::Database;
 
 sub HandleExit
 {
-    lock ($EXIT_FLAG);
+    lock ($EXIT_FLAG); # only written in one thread, but locking to be safe...
 
     $EXIT_FLAG = 1;
 }
 
 $SIG{TERM} = \&HandleExit;
+
+print "Registering this host in the Machine table...\n";
+
+my $db = AdvancedScheduler::Database->connect;
+
+my $sth = $db->prepare("select RegisterMachine(?)");
+$sth->execute(hostname());
+
+$sth->finish;
+$db->disconnect; # Threads will start their own connections
+
 
 my $manager = threads->create(\&WorkManager);    
 #my $worker = threads->create(\&ExecWork);
