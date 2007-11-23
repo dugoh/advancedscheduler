@@ -102,7 +102,6 @@ SQL
 
     $sth = $db->prepare($sql);
     $sth->execute($$opts{Job} ) or ($db->rollback and return 1);
-    
 
     
     $db->commit;
