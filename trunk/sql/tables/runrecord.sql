@@ -8,7 +8,7 @@
 */
 
 -- Table: runrecord
-
+-- select * from RunRecord order by starttime, eventtime
 -- DROP TABLE runrecord;
 
 CREATE TABLE runrecord
@@ -18,7 +18,8 @@ CREATE TABLE runrecord
 	status    varchar(10),
 	starttime timestamp with time zone,
 	endtime   timestamp with time zone,
-	current	  bool default true
+	current	  bool default true,
+	EventTime timestamp with time zone default CURRENT_TIMESTAMP not null
 ) 
 WITHOUT OIDS;
 
