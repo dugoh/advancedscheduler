@@ -71,12 +71,6 @@ sub insert_job
 	$sth = $db->prepare($sql);
 
 	$rc = $sth->execute ($jobdef->name);
-
-	if ($rc)
-	{
-		$sth = $db->prepare("select ScheduleNextRun(?)");
-		$rc = $sth->execute($jobdef->name);
-	}
 	
 	if ($rc) { $db->commit; }
 	else { $db->rollback; }
