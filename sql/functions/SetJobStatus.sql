@@ -68,7 +68,7 @@ begin
 	   to work.
 	*/
 
-	if pStatus in ('SU', 'FA')
+	if pStatus in ('SU', 'FA', 'TE')
 	then 
 		select StartTime
 		into tsStartTime
@@ -90,6 +90,12 @@ begin
 	  
 	insert into RunRecord (JobID, Status, StartTime, EndTime)
 	select CurJobID, pStatus, tsStartTime, tsEndTime;
+
+	-- Initial or terminal states
+	if (pStatus in ('IN', 'SU', 'FA', 'TE'))
+	then
+		perform ScheduleNextRun(pJobName);
+	end if;
 
 
 end;

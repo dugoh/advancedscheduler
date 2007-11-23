@@ -8,7 +8,9 @@ TABLES= jobs.sql \
 	machine.sql \
 	runschedule.sql \
 	UpcomingTimes.sql \
-	maps.sql
+	maps.sql \
+        config.sql
+        
 FUNCTIONS=	CalcNextRuntime.sql \
 		ScheduleNextRun.sql \
 		StringToRecs.sql \
@@ -16,7 +18,8 @@ FUNCTIONS=	CalcNextRuntime.sql \
 		StartConditionsMet.sql \
 		ParseCondition.sql \
 		SetJobStatus.sql \
-                RegisterMachine.sql
+                RegisterMachine.sql \
+                GetConfig.sql
                 
 VIEWS=PendingJobs.sql \
       CurrentStatus
