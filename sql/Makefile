@@ -15,8 +15,11 @@ FUNCTIONS=	CalcNextRuntime.sql \
 		sequence.sql \
 		StartConditionsMet.sql \
 		ParseCondition.sql \
-		SetJobStatus.sql
-VIEWS=PendingJobs.sql
+		SetJobStatus.sql \
+                RegisterMachine.sql
+                
+VIEWS=PendingJobs.sql \
+      CurrentStatus
 
 OBJ=$(ROLES) $(TRIGGERS) $(TABLES) $(FUNCTIONS) $(VIEWS)
 
@@ -67,4 +70,4 @@ CalcNextRuntime.sql: StringToRecs.sql sequence.sql
 
 PendingJobs.sql: StartConditionsMet.sql
 
-SetJobStatus.sql: jobs.sql runrecord.sql
+
