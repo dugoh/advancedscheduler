@@ -28,6 +28,7 @@ my (@parms);
 		owner
 		condition
 		run_window
+		box_name
 	     );
 
 sub insert_job
