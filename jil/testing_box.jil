@@ -1,0 +1,4 @@
+insert_job: testing_box
+job_type: b
+start_times: 5:00, 17:00
+start_mins: 15,45

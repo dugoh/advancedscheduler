@@ -29,6 +29,7 @@ my (@parms);
 		condition
 		run_window
 		box_name
+		job_type
 	     );
 
 sub insert_job
