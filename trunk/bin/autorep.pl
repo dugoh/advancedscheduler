@@ -78,7 +78,8 @@ sub ShowJobDefs
 		  owner,
 		  chroot,
 		  run_window,
-		  box_name
+		  box_name,
+		  job_type
 				
 	from Job
 	where name like ?
