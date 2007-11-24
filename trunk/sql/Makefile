@@ -2,14 +2,14 @@
 
 SETUP= plperl.sql plpgsql.sql
 ROLES=ADSAdmin.sql ADSViewer.sql ADSOperator.sql
-TRIGGERS=
+TRIGGERS=AutoCreate_Boxes.sql
 TABLES= jobs.sql \
 	runrecord.sql \
 	machine.sql \
 	runschedule.sql \
 	UpcomingTimes.sql \
 	maps.sql \
-        config.sql
+        config.sql 
         
 FUNCTIONS=	CalcNextRuntime.sql \
 		ScheduleNextRun.sql \
