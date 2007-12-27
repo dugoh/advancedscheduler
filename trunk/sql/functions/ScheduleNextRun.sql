@@ -1,9 +1,9 @@
 /*
 
-Author: David Spadea
-Date: October 2007
-License: GNU GPL V3
+Copyright 2007 David Spadea
+All rights reserved.
 
+This code is release for use under the terms of the GNU General Public License, version 3.
 */
 
 create or replace function ScheduleNextRun ( text )

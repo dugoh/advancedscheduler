@@ -7,21 +7,7 @@
 
 */
 --drop function SetJobStatus(text, varchar)
-/*
 
-delete from RunRecord;
-
-select SetJobStatus('sleep', 'ST');
-select * from RunRecord;
-
-select SetJobStatus('sleep', 'RU');
-select * from RunRecord;
-
-select SetJobStatus('sleep', 'SU');
-select * from RunRecord;
-
-select * from PendingJobs
-*/
 
 
 create or replace function SetJobStatus(pJobName text, pStatus varchar(10))
