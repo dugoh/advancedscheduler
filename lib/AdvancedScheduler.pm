@@ -112,7 +112,7 @@ sub update_job
 	# name and namespace are primary key fields, and cannot be changed
 	# via update_job. I'm thinking a new JIL command, move_namespace:
 	# or something can accomplish that. 
-	my @parms = sort grep(!/ADSCOMMAND/, grep (!/name/, grep(!/namespace/, keys %{$jobdef}))); 
+	my @parms = sort grep(!/ADSCOMMAND/, keys %{$jobdef}); 
 	my $sql = "update job set " . join(",\n\t", map { "$_ = ?" } @parms)
 		. "\nwhere namespace = ? and name = ?";
 
@@ -123,7 +123,6 @@ sub update_job
 	my @args = map{ $$jobdef{$_} }@parms;
 	push @args, ($$jobdef{namespace}, $$jobdef{name});
 
-	print "Query arguments are:\n" . join("\n", @args) . "\n";
 	my $rc = $sth->execute (@args);
 	
 	if ($rc) { $ads->commit; }
