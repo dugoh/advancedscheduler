@@ -75,15 +75,16 @@ sub ShowJobDefs
                 std_err_file,
                 std_in_file,
                 std_out_file,
-		  owner,
-		  chroot,
-		  run_window,
-		  box_name,
-		  job_type
-				
+		owner,
+		chroot,
+		run_window,
+		box_name,
+		job_type,
+		date_conditions,
+		box_name
 	from Job
 	where name like ?
-	order by name -- will need to order by box,name when that's implemented
+	order by box_name, name -- will need to order by box,name when that's implemented
 	
 SQL
 
@@ -128,7 +129,7 @@ sub ShowRunRecords
 			on job.JobID = rec.JobID
 	where name like ?
 	  and (rec.JobID is null or rec.Current = true)
-	order by name
+	order by box_name, name
 
 SQL
 

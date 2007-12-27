@@ -30,6 +30,7 @@ CREATE TABLE job
   owner varchar(40),
   chroot text default '/',
   run_window varchar(25),
+  date_conditions bool not null default false,
 
   constraint JobPK primary key (namespace, name)
 ) 

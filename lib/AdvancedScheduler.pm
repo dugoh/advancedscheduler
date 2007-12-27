@@ -30,6 +30,7 @@ my (@parms);
 		run_window
 		box_name
 		job_type
+		date_conditions
 	     );
 
 sub insert_job
