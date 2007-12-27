@@ -16,6 +16,11 @@ declare
 	
 begin
 
+	if NEW.box_name is null
+	then
+		return NEW;
+	end if;
+
 	if NEW.job_type != 'c' 
 	then 
 		return NEW; 
