@@ -22,7 +22,7 @@ FUNCTIONS=	CalcNextRuntime.sql \
 		AutoCreate_Box.sql
                 
 VIEWS=PendingJobs.sql \
-      CurrentStatus
+      CurrentStatus.sql
 
 OBJ=$(ROLES) $(TABLES) $(FUNCTIONS) $(VIEWS)
 
