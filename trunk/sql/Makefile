@@ -2,7 +2,6 @@
 
 SETUP= plperl.sql plpgsql.sql
 ROLES=ADSAdmin.sql ADSViewer.sql ADSOperator.sql
-TRIGGERS=AutoCreate_Boxes.sql
 TABLES= jobs.sql \
 	runrecord.sql \
 	machine.sql \
@@ -19,12 +18,13 @@ FUNCTIONS=	CalcNextRuntime.sql \
 		ParseCondition.sql \
 		SetJobStatus.sql \
                 RegisterMachine.sql \
-                GetConfig.sql
+                GetConfig.sql \
+		AutoCreate_Box.sql
                 
 VIEWS=PendingJobs.sql \
       CurrentStatus
 
-OBJ=$(ROLES) $(TRIGGERS) $(TABLES) $(FUNCTIONS) $(VIEWS)
+OBJ=$(ROLES) $(TABLES) $(FUNCTIONS) $(VIEWS)
 
 .PHONY: $(OBJ)
 
@@ -39,10 +39,6 @@ $(SETUP):
 $(ROLES):
 	echo Role: $@
 	${ADSROOT}/bin/adsql.sh < roles/$@ || exit 1
-
-$(TRIGGERS): $(TABLES) 
-	echo Trigger: $@
-	${ADSROOT}/bin/adsql.sh < triggers/$@ || exit 1
 
 $(TABLES): $(ROLES)
 	echo Table: $@
