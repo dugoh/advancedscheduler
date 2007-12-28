@@ -59,13 +59,19 @@ sub insert_job
 	
 	#print Dumper($jobdef);
 	
-	my $sql = "insert into Job (" . join (", ", sort(@parms)) . ")\n"
-		.  "values (" . join(", ", map { "?" } sort @parms ) . ")\n";
+	my @givenparms;
+	map {
+		push @givenparms, $_
+			if defined $$jobdef{$_};
+	} @parms;
+	
+	my $sql = "insert into Job (" . join (", ", sort(@givenparms)) . ")\n"
+		.  "values (" . join(", ", map { "?" } sort @givenparms ) . ")\n";
 
 	#print "Preparing sql:\n\n$sql\n\n";
 	my $sth = $db->prepare($sql);
 
-	my $rc = $sth->execute (map { $jobdef->$_ } sort @parms);
+	my $rc = $sth->execute (map { $jobdef->$_ } sort @givenparms);
 
 	return undef unless ($rc);
 

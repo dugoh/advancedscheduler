@@ -1,4 +1,5 @@
 insert_job: run_true
+box_name: inner-box
 command: true
 date_conditions: 1
 start_mins: 0,5,10,15,20,25,30,35,40,45,50,55
