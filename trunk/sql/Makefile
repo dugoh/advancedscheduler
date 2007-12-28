@@ -19,7 +19,9 @@ FUNCTIONS=	CalcNextRuntime.sql \
 		SetJobStatus.sql \
                 RegisterMachine.sql \
                 GetConfig.sql \
-		AutoCreate_Box.sql
+		AutoCreate_Box.sql \
+		SetDateConditions.sql \
+                ParseRunWindow.sql
                 
 VIEWS=PendingJobs.sql \
       CurrentStatus.sql

@@ -102,7 +102,8 @@ SQL
 		{
 			no warnings;
 			map {
-				print join(": ", $_, $$jd{$_}) . "\n";
+				print join(": ", $_, $$jd{$_}) . "\n"
+					if ($$jd{$_});
 			} sort grep !/insert_job/, @{$sth->{NAME_lc}};
 		}
 	}

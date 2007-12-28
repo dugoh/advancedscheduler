@@ -18,6 +18,8 @@ begin
 	else
 		NEW.date_conditions := false;
 	end if;
+        
+        return NEW;
 		
 end;
 $$ language plpgsql;
