@@ -80,8 +80,7 @@ sub ShowJobDefs
 		run_window,
 		box_name,
 		job_type,
-		date_conditions,
-		box_name
+		date_conditions
 	from Job
 	where name like ?
 	order by box_name, name -- will need to order by box,name when that's implemented

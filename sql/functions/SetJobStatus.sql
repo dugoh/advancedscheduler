@@ -17,12 +17,12 @@ as $$
 declare
 	tsStartTime timestamp with time zone;
 	tsEndTime timestamp with time zone;
-	CurJobID int;
+        CurJob record;
 
 begin
 
-	select JobID 
-	into CurJobID
+	select JobID, Job_Type, Condition
+	into CurJob
 	from Job
 	where Name = pJobName;
 
@@ -30,12 +30,36 @@ begin
 	then
 		tsStartTime := NULL;
 		tsEndTime := NULL;
+
+		delete from RunSchedule where JobID = CurJob.JobID;
+
+		insert into RunSchedule (machine, jobid, next_run, condition)
+		select machine, jobid, CURRENT_TIMESTAMP, condition
+		from Job
+		where JobID = CurJob.JobID;
+
+                if CurJob.Job_Type = 'b' and pStatus = 'AC'
+                then
+                    perform SetJobStatus(Name, 'AC')
+                    from Job
+                    where Box_Name = pJobName;
+
+                    if StartConditionsMet(CurJob.condition) = true
+                    then
+			perform SetJobStatus(pJobName, 'RU');
+		    end if;
+		    
+                end if;
+
+                
+                
 	end if;
 
 	if pStatus = 'RU'
 	then
 		tsStartTime := CURRENT_TIMESTAMP;
 		tsEndTime := NULL;
+
 	end if;
 
 
@@ -59,7 +83,7 @@ begin
 		select StartTime
 		into tsStartTime
 		from RunRecord
-		where JobID = CurJobID
+		where JobID = CurJob.JobID
 		  and Current = true; 
 
 		tsEndTime := CURRENT_TIMESTAMP;
@@ -71,11 +95,11 @@ begin
 	
 	update RunRecord 
 	set Current = false
-	where JobID = CurJobID 
+	where JobID = CurJob.JobID 
 	  and Current = true;
 	  
 	insert into RunRecord (JobID, Status, StartTime, EndTime)
-	select CurJobID, pStatus, tsStartTime, tsEndTime;
+	select CurJob.JobID, pStatus, tsStartTime, tsEndTime;
 
 	-- Initial or terminal states
 	if (pStatus in ('IN', 'SU', 'FA', 'TE'))
